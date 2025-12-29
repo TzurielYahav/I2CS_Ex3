@@ -5,7 +5,8 @@ import java.util.ArrayList;
  * @author boaz.benmoshe
  *
  */
-public class Map implements Map2D {
+public class Map implements Map2D
+{
 	private int[][] _map;
 	private boolean _cyclicFlag = true;
 

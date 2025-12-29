@@ -11,22 +11,29 @@ import java.awt.*;
  * This code is a very simple example (random-walk algorithm).
  * Your task is to implement (here) your PacMan algorithm.
  */
-public class Ex3Algo implements PacManAlgo{
+public class Ex3Algo implements PacManAlgo
+{
 	private int _count;
-	public Ex3Algo() {_count=0;}
-	@Override
+
+    public Ex3Algo() {
+        _count = 0;}
+
 	/**
 	 *  Add a short description for the algorithm as a String.
 	 */
+    @Override
 	public String getInfo() {
 		return null;
-	}
-	@Override
+	} // TO DO
+
 	/**
 	 * This ia the main method - that you should design, implement and test.
 	 */
-	public int move(PacmanGame game) {
-		if(_count==0 || _count==300) {
+    @Override
+	public int move(PacmanGame game)
+    {
+		if(_count == 0 || _count == 300)
+        {
 			int code = 0;
 			int[][] board = game.getGame(0);
 			printBoard(board);
@@ -42,25 +49,36 @@ public class Ex3Algo implements PacManAlgo{
 			int up = Game.UP, left = Game.LEFT, down = Game.DOWN, right = Game.RIGHT;
 		}
 		_count++;
-		int dir = randomDir();
-		return dir;
+        //
+
+        //
+        return randomDir();
 	}
-	private static void printBoard(int[][] b) {
-		for(int y =0;y<b[0].length;y++){
-			for(int x =0;x<b.length;x++){
+
+	private static void printBoard(int[][] b)
+    {
+		for(int y =0;y<b[0].length;y++)
+        {
+			for(int x =0;x<b.length;x++)
+            {
 				int v = b[x][y];
 				System.out.print(v+"\t");
 			}
 			System.out.println();
 		}
 	}
-	private static void printGhosts(GhostCL[] gs) {
-		for(int i=0;i<gs.length;i++){
+
+	private static void printGhosts(GhostCL[] gs)
+    {
+		for(int i=0;i<gs.length;i++)
+        {
 			GhostCL g = gs[i];
 			System.out.println(i+") status: "+g.getStatus()+",  type: "+g.getType()+",  pos: "+g.getPos(0)+",  time: "+g.remainTimeAsEatable(0));
 		}
 	}
-	private static int randomDir() {
+
+	private static int randomDir()
+    {
 		int[] dirs = {Game.UP, Game.LEFT, Game.DOWN, Game.RIGHT};
 		int ind = (int)(Math.random()*dirs.length);
 		return dirs[ind];

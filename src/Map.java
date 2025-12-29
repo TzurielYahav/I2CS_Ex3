@@ -312,7 +312,7 @@ public class Map implements Map2D {
         return new Map(exploreMap);
     }
 
-    //////////// Private Functions ////////////
+    /*//////////// Private Functions ////////////*/
 
     /**
      * recursively checks if the current cell is valid to fill,
@@ -347,6 +347,15 @@ public class Map implements Map2D {
      */
     private Index2D isInBounds(int x, int y)
     {
+        if (_cyclicFlag)
+        {
+            return new Index2D((x + _map[0].length) % _map[0].length, (y + _map.length) % _map.length);
+        }
+        else
+        {
+            return new Index2D(x, y);
+        }
+        /*
         // ======= X =======
         if (x >= _map[0].length)
         {
@@ -378,5 +387,6 @@ public class Map implements Map2D {
                 y = -1;
         }
         return new Index2D(x, y);
+         */
     }
 }

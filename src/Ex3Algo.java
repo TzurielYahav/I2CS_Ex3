@@ -111,13 +111,33 @@ public class Ex3Algo implements PacManAlgo
     private int getDirection(Pixel2D dir)
     {
         if (dir.getX() > _pos.getX())
-            return Game.RIGHT;
+        {
+            if (dir.getX() - 1 > _pos.getX())
+                return Game.LEFT;
+            else
+                return Game.RIGHT;
+        }
         else if (dir.getX() < _pos.getX())
-            return Game.LEFT;
+        {
+            if (dir.getX() + 1 < _pos.getX())
+                return Game.RIGHT;
+            else
+                return Game.LEFT;
+        }
         else if (dir.getY() > _pos.getY())
-            return Game.UP;
+        {
+            if (dir.getY() - 1 > _pos.getY())
+                return Game.DOWN;
+            else
+                return Game.UP;
+        }
         else if (dir.getY() < _pos.getY())
-            return Game.DOWN;
+        {
+            if (dir.getY() + 1 < _pos.getY())
+                return Game.UP;
+            else
+                return Game.DOWN;
+        }
         else
             return 0;
     }
@@ -142,6 +162,7 @@ public class Ex3Algo implements PacManAlgo
         if (_waypoints.isEmpty())
         {
             _waypoints.addAll(_map.shortestPath(_pos, FRUIT_COLORS, OBSTACLE_COLOR));
+            _waypoints.removeFirst();
         }
 
         if (!_waypoints.isEmpty())

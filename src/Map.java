@@ -22,7 +22,7 @@ public class Map implements Map2D
      * @param h The height of the map
      * @param v The initial value to put in all cells
      */
-	public Map(int w, int h, int v) {init(w,h, v);}
+	public Map(int w, int h, int v) {init(w,h,v);}
 
     /**
      * Constructs a square map (size*size) with values of 0.

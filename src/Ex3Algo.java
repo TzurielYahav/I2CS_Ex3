@@ -46,12 +46,12 @@ public class Ex3Algo implements PacManAlgo
     @Override
 	public int move(PacmanGame game)
     {
-        _map.init(game.getGame(0));
+        _map.init(mapFlip(game.getGame(0)));
         _pos = pixelFromString(game.getPos(_CODE));
         //
 		if(_count == 0 || _count == 300)
         {
-			int[][] board = game.getGame(0);
+			int[][] board = mapFlip(game.getGame(0));
 			printBoard(board);
 			int blue = Game.getIntColor(Color.BLUE, _CODE);
 			int pink = Game.getIntColor(Color.PINK, _CODE);
@@ -73,11 +73,11 @@ public class Ex3Algo implements PacManAlgo
 
 	private static void printBoard(int[][] b)
     {
-		for(int y =0;y<b[0].length;y++)
+		for(int y = 0; y < b.length; y++)
         {
-			for(int x =0;x<b.length;x++)
+			for(int x = 0; x < b[0].length; x++)
             {
-				int v = b[x][y];
+				int v = b[y][x];
 				System.out.print(v+"\t");
 			}
 			System.out.println();
@@ -120,6 +120,19 @@ public class Ex3Algo implements PacManAlgo
             return Game.DOWN;
         else
             return 0;
+    }
+
+    private static int[][] mapFlip(int[][] map)
+    {
+        int[][] flipped = new int[map[0].length][map.length];
+        for (int y = 0; y < flipped.length; y++)
+        {
+            for (int x = 0; x < flipped[0].length; x++)
+            {
+                flipped[y][x] = map[x][y];
+            }
+        }
+        return flipped;
     }
 
     /*//////// Move Functions ////////*/

@@ -10,6 +10,12 @@ public class Map implements Map2D
 	private int[][] _map;
 	private boolean _cyclicFlag = true;
 
+
+    public Map()
+    {
+        this(1);
+    }
+
     /**
      * Constructs a w * h 2D raster map with an init value v.
      * @param w The width of the map
@@ -311,6 +317,81 @@ public class Map implements Map2D
             }
         }
         return new Map(exploreMap);
+    }
+
+    /**
+     * BFS like shortest the computation based on iterative raster implementation of BFS, see:
+     * <a href="https://en.wikipedia.org/wiki/Breadth-first_search">...</a>
+     * Searches for the shortest from p1 to p2,
+     * uses a map of all the already explored cells, a queue of all the explored and to be explored cells and a queue of the parent of each explored cell
+     * loops through the explored queue, for each cell in ExQ search for any valid neighbor and add it to the ExQ, and it's parent to the PrQ.
+     * if found the closest target color cell, build a queue from the parents of the shortest path starting from the target and back to the start cell,
+     * reverse it and convert to an array
+     *
+     * @param p1 The starting cell
+     * @param targetColor The target cell color
+     * @param obsColor The obstacle color to avoid
+     */
+    public ArrayList<Pixel2D> shortestPath(Pixel2D p1, int[] targetColor, int obsColor)
+    {
+        if (!isInside(p1))
+            throw new RuntimeException("p1 is out of range");
+        if (getPixel(p1) == obsColor)
+            throw new RuntimeException("p1 is unreachable");
+
+        boolean[][] exploreMap = new boolean[_map.length][_map[0].length];  // a map representing all the tiles that were explored
+
+        ArrayList<Pixel2D> exploreQueue = new ArrayList<Pixel2D>();         // the queue of explored tiles and to be explored tiles
+        ArrayList<Pixel2D> parentQueue = new ArrayList<Pixel2D>();          // the queue holding the parent for each explored tile (parentQ[i] == parent(exploreQ[i]))
+
+        exploreQueue.add(p1);                                               // add the starting tile to the ExQ
+        parentQueue.add(p1);                                                // add the starting tile as the parent of itself
+        exploreMap[p1.getY()][p1.getX()] = true;                            // add the starting tile to the explored tiles map
+
+        int currentPixel = 0;                                               // the current index in the explore queue
+        boolean found = false;                                              // if we found the target pixel (p2)
+        while (!found && currentPixel < exploreQueue.size())                // while we didn't find && there are still elements to explore in the explore queue
+        {
+            Pixel2D p = exploreQueue.get(currentPixel);                     // get the current cell to explore
+            Index2D[] childrenCoords = new Index2D[4];
+            childrenCoords[0] = isInBounds(p.getX(), p.getY() + 1); // the UP neighbor of the current cell
+            childrenCoords[1] = isInBounds(p.getX(), p.getY() - 1); // the DOWN neighbor of the current cell
+            childrenCoords[2] = isInBounds(p.getX() - 1, p.getY()); // the LEFT neighbor of the current cell
+            childrenCoords[3] = isInBounds(p.getX() + 1, p.getY()); // the RIGHT neighbor of the current cell
+
+            for (int i = 0; i < 4 && !found; i++)                                     // for each neighbor cell
+            {
+                if (isInside(childrenCoords[i]) && getPixel(childrenCoords[i]) != obsColor && !exploreMap[childrenCoords[i].getY()][childrenCoords[i].getX()])
+                {                                                           // check if the cell is (inside && not obstacle && not explored yet)
+                    exploreMap[childrenCoords[i].getY()][childrenCoords[i].getX()] = true;  // add the cell to the explored cells map
+                    exploreQueue.add(childrenCoords[i]);                                    // add the cell to the explore queue
+                    parentQueue.add(p);                                                     // add the current cell (p) as the parent of this cell (neighbor)
+                    for (int k = 0; k < targetColor.length && !found; k++)
+                    {
+                        if (getPixel(childrenCoords[i]) == targetColor[k])                         // check if this cell is the target colored cell
+                        {
+                            found = true;
+                        }
+                    }
+                }
+            }
+            currentPixel++;                                                                 // move to the next cell in the explore queue
+        }
+        if (!found)
+            return null;
+
+        // ======== Build the waypoint array ========
+        ArrayList<Pixel2D> ansQueue = new ArrayList<Pixel2D>();
+        ansQueue.add(exploreQueue.getLast());
+        ansQueue.addFirst(parentQueue.getLast());
+        for (int i = exploreQueue.size() - 1; i > 0; i--)                                   // a loop that goes back though the explore list and finds the parent of each cell in the shortest path
+        {
+            if (exploreQueue.get(i).equals(ansQueue.getFirst()))                             // for each cell in answer queue starting from the target find its parent
+            {
+                ansQueue.addFirst(parentQueue.get(i));                                           // add the parent to the answer queue
+            }
+        }
+        return ansQueue;
     }
 
     /*//////////// Private Functions ////////////*/

@@ -4,6 +4,7 @@ import exe.ex3.game.PacManAlgo;
 import exe.ex3.game.PacmanGame;
 
 import java.awt.*;
+import java.util.ArrayList;
 
 /**
  * This is the major algorithmic class for Ex3 - the PacMan game:
@@ -14,9 +15,15 @@ import java.awt.*;
 public class Ex3Algo implements PacManAlgo
 {
 	private int _count;
+    private static final ArrayList<Pixel2D> _waypoints = new ArrayList<>();
+    private static Map _map;
 
-    public Ex3Algo() {
-        _count = 0;}
+
+    public Ex3Algo()
+    {
+        _count = 0;
+        _map = new Map();
+    }
 
 	/**
 	 *  Add a short description for the algorithm as a String.
@@ -32,6 +39,7 @@ public class Ex3Algo implements PacManAlgo
     @Override
 	public int move(PacmanGame game)
     {
+
 		if(_count == 0 || _count == 300)
         {
 			int code = 0;
@@ -83,4 +91,13 @@ public class Ex3Algo implements PacManAlgo
 		int ind = (int)(Math.random()*dirs.length);
 		return dirs[ind];
 	}
+
+    /*//////// Move Functions ////////*/
+
+    private static int chaseFruit(PacmanGame game)
+    {
+        int code = 0;
+        int[][] board = game.getGame(code);
+        _map.shortestPath(game.getPos(code),  )
+    }
 }

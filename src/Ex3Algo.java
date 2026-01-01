@@ -74,25 +74,7 @@ public class Ex3Algo implements PacManAlgo
 		}
 		_count++;
         //
-        boolean isChasing = _ghosts[0].remainTimeAsEatable(CODE) > 0;
-        boolean isEscaping = false;
-        if(!isChasing)
-        {
-            for (GhostCL ghost : _ghosts)
-            {
-                if (pixelFromString(ghost.getPos(CODE)).distance2D(_pos) <= ESCAPE_DISTANCE)
-                {
-                    isEscaping = true;
-                    break;
-                }
-            }
-        }
-        if(isChasing)
-            return chaseGhost(game);
-        else if (isEscaping)
-            return escapeGhosts(game);
-        else
-            return chaseFruit(game);
+
         //
 	}
 
@@ -209,7 +191,7 @@ public class Ex3Algo implements PacManAlgo
 
     /*//////// Move Functions ////////*/
 
-    private int chaseFruit(PacmanGame game)
+    private int chaseFruit()
     {
         if (_waypoints.isEmpty() || _state != STATE_CHASE_FRUIT)
         {
@@ -224,24 +206,35 @@ public class Ex3Algo implements PacManAlgo
         return 0;
     }
 
-    private int escapeGhosts(PacmanGame game)
+    private int pacmanMoveState()
     {
-        Map2D escapePlan = new Map(_map.getWidth(), _map.getHeight(), 0);
-        boolean StopEscaping = true;
-        for (GhostCL ghost : _ghosts)
+        boolean isChasing = _ghosts[0].remainTimeAsEatable(CODE) > 0;
+        if(isChasing)
+            return chaseGhost();
+        else
         {
-            Pixel2D ghostPos = pixelFromString(ghost.getPos(CODE));
-            if (ghostPos.distance2D(_pos) <= ESCAPE_DISTANCE)
+            Map2D escapePlan = new Map(_map.getWidth(), _map.getHeight(), 0);
+            boolean isEscaping = false;
+            for (GhostCL ghost : _ghosts)
             {
-                Map2D currentEscape = _map.allDistance(ghostPos, OBSTACLE_COLOR);
-                if (!canStopEscaping(currentEscape))
-                    StopEscaping = false;
-                escapePlan.addMap2D(currentEscape);
+                Pixel2D ghostPos = pixelFromString(ghost.getPos(CODE));
+                if (ghostPos.distance2D(_pos) <= ESCAPE_DISTANCE)
+                {
+                    Map2D currentEscape = _map.allDistance(ghostPos, OBSTACLE_COLOR);
+                    if (!canStopEscaping(currentEscape))
+                        isEscaping = true;
+                    escapePlan.addMap2D(currentEscape);
+                }
             }
+            if (isEscaping)
+                return escapeGhosts(escapePlan);
+            else
+                return chaseFruit();
         }
-        if (StopEscaping)
-            return chaseFruit(game);
+    }
 
+    private int escapeGhosts(Map2D escapePlan)
+    {
         int bestRoute = escapePlan.getPixel(_pos);
         int direction = 0;
 
@@ -266,13 +259,12 @@ public class Ex3Algo implements PacManAlgo
         Pixel2D right = new Index2D(_pos.getX() + 1, _pos.getY());
         if (bestRoute <= escapePlan.getPixel(right) && hasNoGhosts(right))
         {
-            bestRoute = escapePlan.getPixel(right);
             direction = getDirection(right);
         }
         return direction;
     }
 
-    private int chaseGhost(PacmanGame game)
+    private int chaseGhost()
     {
         if (_waypoints.isEmpty() || _state != STATE_CHASE_GHOST)
         {
@@ -288,7 +280,7 @@ public class Ex3Algo implements PacManAlgo
                 }
             }
             if (closestGhost == -1)
-                return chaseFruit(game);
+                return chaseFruit();
 
             _waypoints.clear();
             _waypoints.addAll(_map.shortestPath(_pos, pixelFromString(_ghosts[closestGhost].getPos(CODE)), OBSTACLE_COLOR));

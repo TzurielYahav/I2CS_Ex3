@@ -167,6 +167,12 @@ public class Ex3Algo implements PacManAlgo
             return 0;
     }
 
+    private boolean ghostNotInCenter(GhostCL g)
+    {
+        Pixel2D p = pixelFromString(g.getPos(CODE));
+        return p.getX() >= 8 && p.getX() <= 14 && p.getY() >= 10 && p.getY() <= 13;
+    }
+
     private static int[][] mapFlip(int[][] map)
     {
         int[][] flipped = new int[map[0].length][map.length];
@@ -253,7 +259,7 @@ public class Ex3Algo implements PacManAlgo
             for (int i = 0; i < _ghosts.length; i++)
             {
                 double newClosestDistance = pixelFromString(_ghosts[i].getPos(CODE)).distance2D(_pos);
-                if (closestDistance > newClosestDistance && newClosestDistance < CHASE_DISTANCE && _map.getPixel(pixelFromString(_ghosts[i].getPos(CODE))) != 0)
+                if (closestDistance > newClosestDistance && newClosestDistance < CHASE_DISTANCE && ghostNotInCenter(_ghosts[i]))
                 {
                     closestDistance = newClosestDistance;
                     closestGhost = i;

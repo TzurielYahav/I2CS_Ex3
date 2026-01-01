@@ -19,7 +19,9 @@ public class Ex3Algo implements PacManAlgo
     private Pixel2D _pos;
     private Map _map;
     private GhostCL[] _ghosts;
+    private PacManAlgo _algo;
     private static final int _CODE = 0;
+    private final int _ESCAPE_DISTANCE = 3;
     private static final int OBSTACLE_COLOR = 1;
     private static final int[] FRUIT_COLORS = {
             3,      // Fruit
@@ -71,7 +73,7 @@ public class Ex3Algo implements PacManAlgo
         boolean isEscaping = false;
         for (GhostCL ghost : _ghosts)
         {
-            if (pixelFromString(ghost.getPos(_CODE)).distance2D(_pos) <= 6)
+            if (pixelFromString(ghost.getPos(_CODE)).distance2D(_pos) <= _ESCAPE_DISTANCE)
             {
                 isEscaping = true;
                 break;
@@ -190,7 +192,7 @@ public class Ex3Algo implements PacManAlgo
         Map2D escapePlan = new Map(_map.getWidth(), _map.getHeight(), 0);
         for (GhostCL ghost : _ghosts)
         {
-            if (pixelFromString(ghost.getPos(_CODE)).distance2D(_pos) <= 6)
+            if (pixelFromString(ghost.getPos(_CODE)).distance2D(_pos) <= _ESCAPE_DISTANCE)
             {
                 escapePlan.addMap2D(_map.allDistance(pixelFromString(ghost.getPos(_CODE)), OBSTACLE_COLOR));
             }
@@ -217,6 +219,9 @@ public class Ex3Algo implements PacManAlgo
             bestRoute = escapePlan.getPixel(right);
             direction = getDirection(right);
         }
+
+        if (bestRoute > _ESCAPE_DISTANCE)
+            direction = chaseFruit(game);
         return direction;
     }
 }

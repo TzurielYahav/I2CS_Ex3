@@ -165,12 +165,12 @@ public class Ex3Algo implements PacManAlgo
         return true;
     }
 
-    private boolean canStopEscaping(Map2D escapeRoute)
+    private boolean ghostTooFar(Map2D escapeRoute)
     {
         int up = escapeRoute.getPixel(_pos.getX() + 1,_pos.getY());
         int down = escapeRoute.getPixel(_pos.getX() - 1,_pos.getY());
         int left = escapeRoute.getPixel(_pos.getX(),_pos.getY() - 1);
-        int right = escapeRoute.getPixel(_pos.getX() + 1,_pos.getY() + 1);
+        int right = escapeRoute.getPixel(_pos.getX(),_pos.getY() + 1);
         return ((up > ESCAPE_DISTANCE ||  up < 0) && (down > ESCAPE_DISTANCE ||  down < 0) && (left > ESCAPE_DISTANCE ||  left < 0) && (right > ESCAPE_DISTANCE ||  right < 0));
     }
 
@@ -216,13 +216,10 @@ public class Ex3Algo implements PacManAlgo
             for (GhostCL ghost : _ghosts)
             {
                 Pixel2D ghostPos = pixelFromString(ghost.getPos(CODE));
-                if (ghostPos.distance2D(_pos) <= ESCAPE_DISTANCE)
-                {
-                    Map2D currentEscape = _map.allDistance(ghostPos, OBSTACLE_COLOR);
-                    if (!canStopEscaping(currentEscape))
-                        isEscaping = true;
-                    escapePlan.addMap2D(currentEscape);
-                }
+                Map2D currentEscape = _map.allDistance(ghostPos, OBSTACLE_COLOR);
+                if (!ghostTooFar(currentEscape))
+                    isEscaping = true;
+                escapePlan.addMap2D(currentEscape);
             }
             if (isEscaping)
                 return escapeGhosts(escapePlan);
@@ -233,31 +230,41 @@ public class Ex3Algo implements PacManAlgo
 
     private int escapeGhosts(Map2D escapePlan)
     {
-        int bestRoute = escapePlan.getPixel(_pos);
+        int bestRoute = 0;
         int direction = 0;
+        int avalibleSides = 0;
 
         Pixel2D up = new Index2D(_pos.getX(), _pos.getY() + 1);
+        avalibleSides += escapePlan.getPixel(up) != -1 ? 1 : 0;
         if (bestRoute <= escapePlan.getPixel(up) && hasNoGhosts(up))
         {
             bestRoute = escapePlan.getPixel(up);
             direction = getDirection(up);
         }
         Pixel2D down = new Index2D(_pos.getX(), _pos.getY() - 1);
+        avalibleSides += escapePlan.getPixel(down) != -1 ? 1 : 0;
         if (bestRoute <= escapePlan.getPixel(down) && hasNoGhosts(down))
         {
             bestRoute = escapePlan.getPixel(down);
             direction = getDirection(down);
         }
         Pixel2D left = new Index2D(_pos.getX() - 1, _pos.getY());
+        avalibleSides += escapePlan.getPixel(left) != -1 ? 1 : 0;
         if (bestRoute <= escapePlan.getPixel(left) && hasNoGhosts(left))
         {
             bestRoute = escapePlan.getPixel(left);
             direction = getDirection(left);
         }
         Pixel2D right = new Index2D(_pos.getX() + 1, _pos.getY());
+        avalibleSides += escapePlan.getPixel(right) != -1 ? 1 : 0;
         if (bestRoute <= escapePlan.getPixel(right) && hasNoGhosts(right))
         {
+            bestRoute = escapePlan.getPixel(right);
             direction = getDirection(right);
+        }
+        if (bestRoute < escapePlan.getPixel(_pos) && avalibleSides > 1)
+        {
+            direction = 0;
         }
         return direction;
     }

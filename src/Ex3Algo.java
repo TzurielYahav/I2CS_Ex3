@@ -73,9 +73,7 @@ public class Ex3Algo implements PacManAlgo
 			int up = Game.UP, left = Game.LEFT, down = Game.DOWN, right = Game.RIGHT;
 		}
 		_count++;
-        //
-
-        //
+        return pacmanMoveState();
 	}
 
 	private static void printBoard(int[][] b)

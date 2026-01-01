@@ -68,9 +68,20 @@ public class Ex3Algo implements PacManAlgo
 		}
 		_count++;
         //
-
+        boolean isEscaping = false;
+        for (GhostCL ghost : _ghosts)
+        {
+            if (pixelFromString(ghost.getPos(_CODE)).distance2D(_pos) <= 6)
+            {
+                isEscaping = true;
+                break;
+            }
+        }
+        if (isEscaping)
+            return escapeGhosts(game);
+        else
+            return chaseFruit(game);
         //
-        return chaseFruit(game);
 	}
 
 	private static void printBoard(int[][] b)

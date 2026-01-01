@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class represents a 2D map as a "screen" or a raster matrix or maze over integers.
@@ -204,14 +205,20 @@ public class Map implements Map2D
      * @param obsColor The obstacle color to avoid
      */
     @Override
-    public Pixel2D[] shortestPath(Pixel2D p1, Pixel2D p2, int obsColor)
+    public ArrayList<Pixel2D> shortestPath(Pixel2D p1, Pixel2D p2, int obsColor)
     {
         if (!isInside(p1) || !isInside(p2))
             throw new RuntimeException("p1 or p2 is out of range");
         if (getPixel(p1) == obsColor || getPixel(p2) == obsColor)
             throw new RuntimeException("p1 or p2 is unreachable");
+
+        ArrayList<Pixel2D> ansQueue = new ArrayList<Pixel2D>();
         if (p1.equals(p2))
-            return new Pixel2D[]{p1, p2};
+        {
+            ansQueue.add(p1);
+            ansQueue.add(p2);
+            return ansQueue;
+        }
 
         boolean[][] exploreMap = new boolean[_map.length][_map[0].length];  // a map representing all the tiles that were explored
 
@@ -253,23 +260,33 @@ public class Map implements Map2D
             return null;
 
         // ======== Build the waypoint array ========
-        ArrayList<Pixel2D> ansQueue = new ArrayList<Pixel2D>();
+//        ArrayList<Pixel2D> ansQueue = new ArrayList<Pixel2D>();
+//        ansQueue.add(exploreQueue.getLast());
+//        ansQueue.add(parentQueue.getLast());
+//        for (int i = exploreQueue.size() - 1; i > 0; i--)                                   // a loop that goes back though the explore list and finds the parent of each cell in the shortest path
+//        {
+//            if (exploreQueue.get(i).equals(ansQueue.getLast()))                             // for each cell in answer queue starting from the target find its parent
+//            {
+//                ansQueue.add(parentQueue.get(i));                                           // add the parent to the answer queue
+//            }
+//        }
+//        [ansQueue.size()];                                       // convert to array
+//        for (int i = 0; i < ans.length; i++)
+//        {
+//            ans[i] = ansQueue.getLast();
+//            ansQueue.removeLast();
+//        }
+        //
         ansQueue.add(exploreQueue.getLast());
-        ansQueue.add(parentQueue.getLast());
+        ansQueue.addFirst(parentQueue.getLast());
         for (int i = exploreQueue.size() - 1; i > 0; i--)                                   // a loop that goes back though the explore list and finds the parent of each cell in the shortest path
         {
-            if (exploreQueue.get(i).equals(ansQueue.getLast()))                             // for each cell in answer queue starting from the target find its parent
+            if (exploreQueue.get(i).equals(ansQueue.getFirst()))                             // for each cell in answer queue starting from the target find its parent
             {
-                ansQueue.add(parentQueue.get(i));                                           // add the parent to the answer queue
+                ansQueue.addFirst(parentQueue.get(i));                                           // add the parent to the answer queue
             }
         }
-        Pixel2D[] ans = new Pixel2D[ansQueue.size()];                                       // convert to array
-        for (int i = 0; i < ans.length; i++)
-        {
-            ans[i] = ansQueue.getLast();
-            ansQueue.removeLast();
-        }
-        return ans;
+        return ansQueue;
     }
 
     @Override

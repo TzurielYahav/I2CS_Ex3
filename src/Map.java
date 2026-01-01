@@ -169,6 +169,17 @@ public class Map implements Map2D
         }
     }
 
+    public void mul(double scalar)
+    {
+        for (int i = 0; i < _map[0].length; i++)
+        {
+            for (int j = 0; j < _map.length; j++)
+            {
+                _map[j][i] = (int) ((double)_map[j][i] * scalar);
+            }
+        }
+    }
+
     /**
      * Fills this map with the new color (new_v) starting from p.
      * <a href="https://en.wikipedia.org/wiki/Flood_fill">...</a>

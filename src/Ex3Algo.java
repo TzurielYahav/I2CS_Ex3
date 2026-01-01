@@ -24,7 +24,7 @@ public class Ex3Algo implements PacManAlgo
     private static final int CODE = 0;
     private final int STATE_CHASE_FRUIT = 0;
     private final int STATE_CHASE_GHOST = 1;
-    private final int ESCAPE_DISTANCE = 3;
+    private final int ESCAPE_DISTANCE = 4;
     private final int CHASE_DISTANCE = 3;
     private static final int OBSTACLE_COLOR = 1;
     private static final int[] FRUIT_COLORS = {
@@ -202,9 +202,13 @@ public class Ex3Algo implements PacManAlgo
         Map2D escapePlan = new Map(_map.getWidth(), _map.getHeight(), 0);
         for (GhostCL ghost : _ghosts)
         {
-            if (pixelFromString(ghost.getPos(CODE)).distance2D(_pos) <= ESCAPE_DISTANCE)
+            Pixel2D ghostPos = pixelFromString(ghost.getPos(CODE));
+            if (ghostPos.distance2D(_pos) <= ESCAPE_DISTANCE)
             {
-                escapePlan.addMap2D(_map.allDistance(pixelFromString(ghost.getPos(CODE)), OBSTACLE_COLOR));
+                Map2D currentEscape = _map.allDistance(ghostPos, OBSTACLE_COLOR);
+                if (ghostPos.distance2D(_pos) <= 1)
+                    currentEscape.mul(10);
+                escapePlan.addMap2D(currentEscape);
             }
         }
         int bestRoute = escapePlan.getPixel(_pos);
@@ -249,7 +253,7 @@ public class Ex3Algo implements PacManAlgo
             for (int i = 0; i < _ghosts.length; i++)
             {
                 double newClosestDistance = pixelFromString(_ghosts[i].getPos(CODE)).distance2D(_pos);
-                if (closestDistance > newClosestDistance && newClosestDistance < CHASE_DISTANCE)
+                if (closestDistance > newClosestDistance && newClosestDistance < CHASE_DISTANCE && _map.getPixel(pixelFromString(_ghosts[i].getPos(CODE))) != 0)
                 {
                     closestDistance = newClosestDistance;
                     closestGhost = i;

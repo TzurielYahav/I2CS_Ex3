@@ -101,6 +101,12 @@ public interface Map2D {
 	 */
 	void setCyclic(boolean cy);
 
+    /**
+     * This method multiplay this map with a scalar (casting to int).
+     * @param scalar
+     */
+    public void mul(double scalar);
+
 	///////////////// Algorithms //////////////////
 	/**
 	 * Fill the connected component of p in the new color (new_v).

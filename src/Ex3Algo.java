@@ -18,6 +18,7 @@ public class Ex3Algo implements PacManAlgo
     private final ArrayList<Pixel2D> _waypoints = new ArrayList<>();
     private Pixel2D _pos;
     private Map _map;
+    private GhostCL[] _ghosts;
     private static final int _CODE = 0;
     private static final int OBSTACLE_COLOR = 1;
     private static final int[] FRUIT_COLORS = {
@@ -48,6 +49,7 @@ public class Ex3Algo implements PacManAlgo
     {
         _map.init(mapFlip(game.getGame(0)));
         _pos = pixelFromString(game.getPos(_CODE));
+        _ghosts = game.getGhosts(_CODE);
         //
 		if(_count == 0 || _count == 300)
         {
@@ -60,8 +62,8 @@ public class Ex3Algo implements PacManAlgo
 			System.out.println("Blue=" + blue + ", Pink=" + pink + ", Black=" + black + ", Green=" + green);
 			String pos = game.getPos(_CODE).toString();
 			System.out.println("Pacman coordinate: "+pos);
-			GhostCL[] ghosts = game.getGhosts(_CODE);
-			printGhosts(ghosts);
+			_ghosts = game.getGhosts(_CODE);
+			printGhosts(_ghosts);
 			int up = Game.UP, left = Game.LEFT, down = Game.DOWN, right = Game.RIGHT;
 		}
 		_count++;
@@ -170,5 +172,40 @@ public class Ex3Algo implements PacManAlgo
             return getDirection(_waypoints.removeFirst());
         }
         return 0;
+    }
+
+    private int escapeGhosts(PacmanGame game)
+    {
+        Map2D escapePlan = new Map(_map.getWidth(), _map.getHeight(), 0);
+        for (GhostCL ghost : _ghosts)
+        {
+            if (pixelFromString(ghost.getPos(_CODE)).distance2D(_pos) <= 6)
+            {
+                escapePlan.addMap2D(_map.allDistance(pixelFromString(ghost.getPos(_CODE)), OBSTACLE_COLOR));
+            }
+        }
+        Pixel2D up = new Index2D(_pos.getX(), _pos.getY() + 1);
+        int bestRoute = escapePlan.getPixel(up);
+        int direction = getDirection(up);
+
+        Pixel2D down = new Index2D(_pos.getX(), _pos.getY() - 1);
+        if (bestRoute < escapePlan.getPixel(down))
+        {
+            bestRoute = escapePlan.getPixel(down);
+            direction = getDirection(down);
+        }
+        Pixel2D left = new Index2D(_pos.getX() - 1, _pos.getY());
+        if (bestRoute < escapePlan.getPixel(left))
+        {
+            bestRoute = escapePlan.getPixel(left);
+            direction = getDirection(left);
+        }
+        Pixel2D right = new Index2D(_pos.getX() + 1, _pos.getY());
+        if (bestRoute < escapePlan.getPixel(right))
+        {
+            bestRoute = escapePlan.getPixel(right);
+            direction = getDirection(right);
+        }
+        return direction;
     }
 }

@@ -143,6 +143,31 @@ public class Map implements Map2D
     @Override
     public void setCyclic(boolean cy) {_cyclicFlag = cy;}
 
+    public boolean sameDimensions(Map2D p)
+    {
+        if (p == null)
+            throw new NullPointerException("Map2D p is null");
+        return getHeight() == p.getHeight() && getWidth() == p.getWidth();
+    }
+
+    @Override
+    public void addMap2D(Map2D p)
+    {
+        if (p == null)
+            throw new NullPointerException("Map2D p is null");
+        if (sameDimensions(p))
+        {
+            int[][] otherMap = p.getMap();
+            for (int i = 0; i < _map[0].length; i++)
+            {
+                for (int j = 0; j < _map.length; j++)
+                {
+                    _map[j][i] += otherMap[j][i];
+                }
+            }
+        }
+    }
+
     /**
      * Fills this map with the new color (new_v) starting from p.
      * <a href="https://en.wikipedia.org/wiki/Flood_fill">...</a>
@@ -322,11 +347,10 @@ public class Map implements Map2D
     /**
      * BFS like shortest the computation based on iterative raster implementation of BFS, see:
      * <a href="https://en.wikipedia.org/wiki/Breadth-first_search">...</a>
-     * Searches for the shortest from p1 to p2,
+     * Searches for the shortest path from p1 to the closest cell of the target color,
      * uses a map of all the already explored cells, a queue of all the explored and to be explored cells and a queue of the parent of each explored cell
      * loops through the explored queue, for each cell in ExQ search for any valid neighbor and add it to the ExQ, and it's parent to the PrQ.
-     * if found the closest target color cell, build a queue from the parents of the shortest path starting from the target and back to the start cell,
-     * reverse it and convert to an array
+     * if found the closest target color cell, build a queue from the parents of the shortest path and return it.
      *
      * @param p1 The starting cell
      * @param targetColor The target cell color

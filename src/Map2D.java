@@ -82,6 +82,13 @@ public interface Map2D {
 	 */
 	boolean isInside(Pixel2D p);
 
+    /**
+     * This method adds the map p to this map - assuming they have the same dimensions (
+     * else do nothing).
+     * @param p - the map that should be added to this map (just in case they have the same dimensions).
+     */
+    public void addMap2D(Map2D p);
+
 	/**
 	 * @return true iff this map should be addressed as a cyclic one.
 	 */

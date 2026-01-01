@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * This class represents a 2D map as a "screen" or a raster matrix or maze over integers.
@@ -106,14 +105,14 @@ public class Map implements Map2D
     @Override
     public int getPixel(int x, int y)
     {
-        if (x < 0 || y < 0 || x >= getWidth() || y >= getHeight())
-            throw new IllegalArgumentException("x or y is not inside the map");
-        return _map[y][x];
+        Pixel2D p = new Index2D(x,y);
+        return getPixel(p);
     }
 
     @Override
     public int getPixel(Pixel2D p)
     {
+        p = pixelToBounds(p.getX(), p.getY());
         if (!isInside(p))
             throw new IllegalArgumentException("Pixel2D is not inside the map");
         return _map[p.getY()][p.getX()];
@@ -246,10 +245,10 @@ public class Map implements Map2D
         {
             Pixel2D p = exploreQueue.get(currentPixel);                     // get the current cell to explore
             Index2D[] childrenCoords = new Index2D[4];
-            childrenCoords[0] = isInBounds(p.getX(), p.getY() + 1); // the UP neighbor of the current cell
-            childrenCoords[1] = isInBounds(p.getX(), p.getY() - 1); // the DOWN neighbor of the current cell
-            childrenCoords[2] = isInBounds(p.getX() - 1, p.getY()); // the LEFT neighbor of the current cell
-            childrenCoords[3] = isInBounds(p.getX() + 1, p.getY()); // the RIGHT neighbor of the current cell
+            childrenCoords[0] = pixelToBounds(p.getX(), p.getY() + 1); // the UP neighbor of the current cell
+            childrenCoords[1] = pixelToBounds(p.getX(), p.getY() - 1); // the DOWN neighbor of the current cell
+            childrenCoords[2] = pixelToBounds(p.getX() - 1, p.getY()); // the LEFT neighbor of the current cell
+            childrenCoords[3] = pixelToBounds(p.getX() + 1, p.getY()); // the RIGHT neighbor of the current cell
 
             for (int i = 0; i < 4; i++)                                     // for each neighbor cell
             {
@@ -271,23 +270,6 @@ public class Map implements Map2D
             return null;
 
         // ======== Build the waypoint array ========
-//        ArrayList<Pixel2D> ansQueue = new ArrayList<Pixel2D>();
-//        ansQueue.add(exploreQueue.getLast());
-//        ansQueue.add(parentQueue.getLast());
-//        for (int i = exploreQueue.size() - 1; i > 0; i--)                                   // a loop that goes back though the explore list and finds the parent of each cell in the shortest path
-//        {
-//            if (exploreQueue.get(i).equals(ansQueue.getLast()))                             // for each cell in answer queue starting from the target find its parent
-//            {
-//                ansQueue.add(parentQueue.get(i));                                           // add the parent to the answer queue
-//            }
-//        }
-//        [ansQueue.size()];                                       // convert to array
-//        for (int i = 0; i < ans.length; i++)
-//        {
-//            ans[i] = ansQueue.getLast();
-//            ansQueue.removeLast();
-//        }
-        //
         ansQueue.add(exploreQueue.getLast());
         ansQueue.addFirst(parentQueue.getLast());
         for (int i = exploreQueue.size() - 1; i > 0; i--)                                   // a loop that goes back though the explore list and finds the parent of each cell in the shortest path
@@ -347,10 +329,10 @@ public class Map implements Map2D
             int distance = exploreMap[current.getY()][current.getX()];
 
             Index2D[] childrenCoords = new Index2D[4];
-            childrenCoords[0] = isInBounds(current.getX(), current.getY() + 1); // the UP neighbor of the current cell
-            childrenCoords[1] = isInBounds(current.getX(), current.getY() - 1); // the DOWN neighbor of the current cell
-            childrenCoords[2] = isInBounds(current.getX() - 1, current.getY()); // the LEFT neighbor of the current cell
-            childrenCoords[3] = isInBounds(current.getX() + 1, current.getY()); // the RIGHT neighbor of the current cell
+            childrenCoords[0] = pixelToBounds(current.getX(), current.getY() + 1); // the UP neighbor of the current cell
+            childrenCoords[1] = pixelToBounds(current.getX(), current.getY() - 1); // the DOWN neighbor of the current cell
+            childrenCoords[2] = pixelToBounds(current.getX() - 1, current.getY()); // the LEFT neighbor of the current cell
+            childrenCoords[3] = pixelToBounds(current.getX() + 1, current.getY()); // the RIGHT neighbor of the current cell
 
             for (int i = 0; i < 4; i++)
             {
@@ -406,10 +388,10 @@ public class Map implements Map2D
         {
             Pixel2D p = exploreQueue.get(currentPixel);                     // get the current cell to explore
             Index2D[] childrenCoords = new Index2D[4];
-            childrenCoords[0] = isInBounds(p.getX(), p.getY() + 1); // the UP neighbor of the current cell
-            childrenCoords[1] = isInBounds(p.getX(), p.getY() - 1); // the DOWN neighbor of the current cell
-            childrenCoords[2] = isInBounds(p.getX() - 1, p.getY()); // the LEFT neighbor of the current cell
-            childrenCoords[3] = isInBounds(p.getX() + 1, p.getY()); // the RIGHT neighbor of the current cell
+            childrenCoords[0] = pixelToBounds(p.getX(), p.getY() + 1); // the UP neighbor of the current cell
+            childrenCoords[1] = pixelToBounds(p.getX(), p.getY() - 1); // the DOWN neighbor of the current cell
+            childrenCoords[2] = pixelToBounds(p.getX() - 1, p.getY()); // the LEFT neighbor of the current cell
+            childrenCoords[3] = pixelToBounds(p.getX() + 1, p.getY()); // the RIGHT neighbor of the current cell
 
             for (int i = 0; i < 4 && !found; i++)                                     // for each neighbor cell
             {
@@ -460,7 +442,7 @@ public class Map implements Map2D
     {
         int ans = 0;
 
-        Index2D currentP = isInBounds(p1.getX(), p1.getY());    // checks if p1 is in the map (if not and is cyclic then moves the point to the other side)
+        Index2D currentP = pixelToBounds(p1.getX(), p1.getY());    // checks if p1 is in the map (if not and is cyclic then moves the point to the other side)
         if (isInside(currentP) && getPixel(currentP) == oldColor)       // checks if the new corrected point is inside the map and if the color is oldColor
         {
             ans = 1;                                                    // add this cell to the number of cells filled
@@ -479,7 +461,7 @@ public class Map implements Map2D
      * @param y The y pos
      * @return The corrected pos or (-1,y) | (x,-1) for the part that is out of bounds
      */
-    private Index2D isInBounds(int x, int y)
+    private Index2D pixelToBounds(int x, int y)
     {
         if (_cyclicFlag)
         {
@@ -489,38 +471,5 @@ public class Map implements Map2D
         {
             return new Index2D(x, y);
         }
-        /*
-        // ======= X =======
-        if (x >= _map[0].length)
-        {
-            if (_cyclicFlag)
-                x = 0;
-            else
-                x = -1;
-        }
-        else if (x < 0)
-        {
-            if (_cyclicFlag)
-                x = _map[0].length - 1;
-            else
-                x = -1;
-        }
-        // ======= Y =======
-        if (y >= _map.length)
-        {
-            if (_cyclicFlag)
-                y = 0;
-            else
-                y = -1;
-        }
-        else if (y < 0)
-        {
-            if (_cyclicFlag)
-                y = _map.length - 1;
-            else
-                y = -1;
-        }
-        return new Index2D(x, y);
-         */
     }
 }

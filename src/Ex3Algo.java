@@ -25,7 +25,7 @@ public class Ex3Algo implements PacManAlgo
     private final int STATE_CHASE_FRUIT = 0;
     private final int STATE_CHASE_GHOST = 1;
     private final int ESCAPE_DISTANCE = 4;
-    private final int CHASE_DISTANCE = 3;
+    private final int CHASE_DISTANCE = 5;
     private static final int OBSTACLE_COLOR = 1;
     private static final int[] FRUIT_COLORS = {
             3,      // Fruit
@@ -170,7 +170,19 @@ public class Ex3Algo implements PacManAlgo
     private boolean ghostNotInCenter(GhostCL g)
     {
         Pixel2D p = pixelFromString(g.getPos(CODE));
-        return p.getX() >= 8 && p.getX() <= 14 && p.getY() >= 10 && p.getY() <= 13;
+        return !(p.getX() >= 8 && p.getX() <= 14 && p.getY() >= 10 && p.getY() <= 13);
+    }
+
+    private boolean hasNoGhosts(Pixel2D p)
+    {
+        for (GhostCL ghost : _ghosts)
+        {
+            if (p.equals(pixelFromString(ghost.getPos(CODE))))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static int[][] mapFlip(int[][] map)
@@ -206,47 +218,47 @@ public class Ex3Algo implements PacManAlgo
     private int escapeGhosts(PacmanGame game)
     {
         Map2D escapePlan = new Map(_map.getWidth(), _map.getHeight(), 0);
+        int numberOfChasingGhosts = 0;
         for (GhostCL ghost : _ghosts)
         {
             Pixel2D ghostPos = pixelFromString(ghost.getPos(CODE));
             if (ghostPos.distance2D(_pos) <= ESCAPE_DISTANCE)
             {
+                numberOfChasingGhosts++;
                 Map2D currentEscape = _map.allDistance(ghostPos, OBSTACLE_COLOR);
-                if (ghostPos.distance2D(_pos) <= 1)
-                    currentEscape.mul(10);
                 escapePlan.addMap2D(currentEscape);
             }
         }
         int bestRoute = escapePlan.getPixel(_pos);
         int direction = 0;
 
+        if (bestRoute >= ESCAPE_DISTANCE * numberOfChasingGhosts)
+            return chaseFruit(game);
+
         Pixel2D up = new Index2D(_pos.getX(), _pos.getY() + 1);
-        if (bestRoute < escapePlan.getPixel(up))
+        if (bestRoute < escapePlan.getPixel(up) && hasNoGhosts(up))
         {
             bestRoute = escapePlan.getPixel(up);
             direction = getDirection(up);
         }
         Pixel2D down = new Index2D(_pos.getX(), _pos.getY() - 1);
-        if (bestRoute < escapePlan.getPixel(down))
+        if (bestRoute < escapePlan.getPixel(down) && hasNoGhosts(down))
         {
             bestRoute = escapePlan.getPixel(down);
             direction = getDirection(down);
         }
         Pixel2D left = new Index2D(_pos.getX() - 1, _pos.getY());
-        if (bestRoute < escapePlan.getPixel(left))
+        if (bestRoute < escapePlan.getPixel(left) && hasNoGhosts(left))
         {
             bestRoute = escapePlan.getPixel(left);
             direction = getDirection(left);
         }
         Pixel2D right = new Index2D(_pos.getX() + 1, _pos.getY());
-        if (bestRoute < escapePlan.getPixel(right))
+        if (bestRoute < escapePlan.getPixel(right) && hasNoGhosts(right))
         {
             bestRoute = escapePlan.getPixel(right);
             direction = getDirection(right);
         }
-
-        if (bestRoute > ESCAPE_DISTANCE)
-            direction = chaseFruit(game);
         return direction;
     }
 

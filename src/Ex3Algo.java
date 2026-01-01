@@ -25,7 +25,7 @@ public class Ex3Algo implements PacManAlgo
     private final int STATE_CHASE_FRUIT = 0;
     private final int STATE_CHASE_GHOST = 1;
     private final int ESCAPE_DISTANCE = 4;
-    private final int CHASE_DISTANCE = 5;
+    private final int CHASE_DISTANCE = 3;
     private static final int OBSTACLE_COLOR = 1;
     private static final int[] FRUIT_COLORS = {
             3,      // Fruit
@@ -171,7 +171,7 @@ public class Ex3Algo implements PacManAlgo
         int down = escapeRoute.getPixel(_pos.getX() - 1,_pos.getY());
         int left = escapeRoute.getPixel(_pos.getX(),_pos.getY() - 1);
         int right = escapeRoute.getPixel(_pos.getX(),_pos.getY() + 1);
-        return ((up > ESCAPE_DISTANCE ||  up < 0) && (down > ESCAPE_DISTANCE ||  down < 0) && (left > ESCAPE_DISTANCE ||  left < 0) && (right > ESCAPE_DISTANCE ||  right < 0));
+        return ((up >= ESCAPE_DISTANCE ||  up < 0) && (down >= ESCAPE_DISTANCE ||  down < 0) && (left >= ESCAPE_DISTANCE ||  left < 0) && (right >= ESCAPE_DISTANCE ||  right < 0));
     }
 
     private static int[][] mapFlip(int[][] map)

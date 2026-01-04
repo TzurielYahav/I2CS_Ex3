@@ -389,8 +389,8 @@ public class Map implements Map2D
             Pixel2D p = exploreQueue.get(currentPixel);                     // get the current cell to explore
             Index2D[] childrenCoords = new Index2D[4];
             childrenCoords[0] = pixelToBounds(p.getX(), p.getY() + 1); // the UP neighbor of the current cell
-            childrenCoords[1] = pixelToBounds(p.getX(), p.getY() - 1); // the DOWN neighbor of the current cell
             childrenCoords[2] = pixelToBounds(p.getX() - 1, p.getY()); // the LEFT neighbor of the current cell
+            childrenCoords[1] = pixelToBounds(p.getX(), p.getY() - 1); // the DOWN neighbor of the current cell
             childrenCoords[3] = pixelToBounds(p.getX() + 1, p.getY()); // the RIGHT neighbor of the current cell
 
             for (int i = 0; i < 4 && !found; i++)                                     // for each neighbor cell

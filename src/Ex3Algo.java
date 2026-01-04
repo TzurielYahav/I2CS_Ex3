@@ -205,7 +205,7 @@ public class Ex3Algo implements PacManAlgo
 
     /*//////// Move Functions ////////*/
 
-    private int chaseFruit()
+    private void chaseFruit()
     {
 //        if (_waypoints.isEmpty() || _state != STATE_CHASE_FRUIT)
 //        {
@@ -225,23 +225,26 @@ public class Ex3Algo implements PacManAlgo
         }
         _waypoints.clear();
         ArrayList<Pixel2D> newWay = tmpMap.shortestPath(_pos, FRUIT_COLORS, OBSTACLE_COLOR);
-        if (newWay == null)
-            return 0;
-        _waypoints.addAll(newWay);
-        _waypoints.removeFirst();
-        return getDirection(_waypoints.removeFirst());
+        if (newWay != null && !newWay.isEmpty())
+            _waypoints.addAll(newWay);
+            _waypoints.removeFirst();
 //        _state = STATE_CHASE_FRUIT;
         // ===========================================
     }
 
     private int pacmanMoveState()
     {
+        _waypoints.clear();
         boolean isChasing = _ghosts[0].remainTimeAsEatable(CODE) > 0.5;
+        int direction = 0;
         if(isChasing)
-            return chaseGhost();
-        else
+            direction = chaseGhost();
+        if (direction == 0)
         {
-            int direction = chaseFruit();
+            chaseFruit();
+            if (isChasing && !_waypoints.isEmpty())
+                return getDirection(_waypoints.removeFirst());
+
             Map2D escapePlan = new Map(_map.getWidth(), _map.getHeight(), 0);
             boolean isEscaping = false;
             for (GhostCL ghost : _ghosts)
@@ -255,7 +258,7 @@ public class Ex3Algo implements PacManAlgo
                 }
             }
             printGhosts(_ghosts);
-            if (direction == 0 || isEscaping)
+            if (isEscaping)
             {
                 direction = escapeGhosts(escapePlan);
                 System.out.println("Escape " + direction);
@@ -263,6 +266,7 @@ public class Ex3Algo implements PacManAlgo
             }
             else
             {
+                direction = getDirection(_waypoints.removeFirst());
                 System.out.println(" Fruit " + direction);
                 return direction;
             }
@@ -272,6 +276,7 @@ public class Ex3Algo implements PacManAlgo
 //            else
 //                return chaseFruit();
         }
+        return direction;
     }
 
     private int escapeGhosts(Map2D escapePlan)
@@ -331,7 +336,7 @@ public class Ex3Algo implements PacManAlgo
                 }
             }
             if (closestGhost == -1)
-                return chaseFruit();
+                return 0;
 
             _waypoints.clear();
             _waypoints.addAll(_map.shortestPath(_pos, pixelFromString(_ghosts[closestGhost].getPos(CODE)), OBSTACLE_COLOR));

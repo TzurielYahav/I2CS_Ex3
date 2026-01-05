@@ -235,9 +235,14 @@ public class Ex3Algo implements PacManAlgo
 //            return getDirection(_waypoints.removeFirst());
 //        }
         // ===========================================
-        Map tmpMap = new Map(_map.getMap());
-        if (!isChasing)
+        Map tmpMap;
+        if (isChasing)
         {
+            tmpMap = dontEatBigFruits();
+        }
+        else
+        {
+            tmpMap = new Map(_map.getMap());
             for (int i = 0; i < _ghosts.length; i++)
             {
                 tmpMap.setPixel(getGhostPos(i), OBSTACLE_COLOR);

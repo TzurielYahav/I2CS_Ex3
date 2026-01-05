@@ -8,7 +8,10 @@ import java.util.ArrayList;
 
 /**
  * This is the major algorithmic class for Ex3 - the PacMan game:
- * 316560499, 4, 8358, 0, 482, 1767628763652, 6, -915428924, 2247922988121988
+ * Level 4 - 100
+ * 316560499, 4, 12487, 0, 353, 1767640452092, 10, -915428924, -25315164343659
+ * Level 4 - 200
+ * 316560499, 4, 6480, 0, 360, 1767640553415, 4, -915428924, -1369122087090259
  * This code is a very simple example (random-walk algorithm).
  * Your task is to implement (here) your PacMan algorithm.
  */
@@ -21,8 +24,9 @@ public class Ex3Algo implements PacManAlgo
     private GhostCL[] _ghosts;
     private PacManAlgo _algo;
     private static final int CODE = 0;
-    private final int ESCAPE_DISTANCE = 4;
+    private final int ESCAPE_DISTANCE = 6;
     private final int CHASE_DISTANCE = 3;
+    private final double NO_TIME_TO_CHASE = 0.2;
     private static final int OBSTACLE_COLOR = 1;
     private static final int[] FRUIT_COLORS = {
             3,      // Fruit
@@ -189,16 +193,49 @@ public class Ex3Algo implements PacManAlgo
 
     private boolean ghostTooFar(Map2D ghostDistances)
     {
-        int up = ghostDistances.getPixel(_pos.getX() + 1,_pos.getY());
-        int down = ghostDistances.getPixel(_pos.getX() - 1,_pos.getY());
-        int left = ghostDistances.getPixel(_pos.getX(),_pos.getY() - 1);
-        int right = ghostDistances.getPixel(_pos.getX(),_pos.getY() + 1);
         for(int i = 0; i < 4 && i < _waypoints.size(); i++)
         {
             if (ghostDistances.getPixel(_waypoints.get(i)) <= i + 1)
                 return false;
         }
-        return ((up >= ESCAPE_DISTANCE ||  up < 0) && (down >= ESCAPE_DISTANCE ||  down < 0) && (left >= ESCAPE_DISTANCE ||  left < 0) && (right >= ESCAPE_DISTANCE ||  right < 0));
+        return ghostDistances.getPixel(_pos) >= ESCAPE_DISTANCE;
+    }
+
+    private Pixel2D findLoneFruit(Map map)
+    {
+        Pixel2D[] sides = new Index2D[4];
+        sides[0] = new Index2D(_pos.getX() + 1, _pos.getY());
+        sides[2] = new Index2D(_pos.getX() - 1, _pos.getY());
+        sides[1] = new Index2D(_pos.getX(), _pos.getY() - 1);
+        sides[3] = new Index2D(_pos.getX(), _pos.getY() + 1);
+
+        for(int i = 0; i < sides.length; i++)
+        {
+            if (map.getPixel(sides[i]) == FRUIT_COLORS[0])
+            {
+                if (isLoneFruit(map, sides[i]))
+                    return sides[i];
+            }
+        }
+        return null;
+    }
+
+    private boolean isLoneFruit(Map map, Pixel2D p)
+    {
+        Pixel2D[] sides = new Index2D[4];
+        sides[0] = new Index2D(p.getX() + 1, p.getY());
+        sides[2] = new Index2D(p.getX() - 1, p.getY());
+        sides[1] = new Index2D(p.getX(), p.getY() - 1);
+        sides[3] = new Index2D(p.getX(), p.getY() + 1);
+
+        for(int i = 0; i < sides.length; i++)
+        {
+            if (map.getPixel(sides[i]) == FRUIT_COLORS[0])
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static int[][] mapFlip(int[][] map)
@@ -231,19 +268,25 @@ public class Ex3Algo implements PacManAlgo
                 tmpMap.setPixel(getGhostPos(i), OBSTACLE_COLOR);
             }
         }
-        _waypoints.clear();
-        ArrayList<Pixel2D> newWay = tmpMap.shortestPath(_pos, FRUIT_COLORS, OBSTACLE_COLOR);
-        if (newWay != null && !newWay.isEmpty())
+        Pixel2D loneFruit = findLoneFruit(tmpMap);
+        if (loneFruit != null)
+            _waypoints.add(loneFruit);
+        else
         {
-            _waypoints.addAll(newWay);
-            _waypoints.removeFirst();
+            _waypoints.clear();
+            ArrayList<Pixel2D> newWay = tmpMap.shortestPath(_pos, FRUIT_COLORS, OBSTACLE_COLOR);
+            if (newWay != null && !newWay.isEmpty())
+            {
+                _waypoints.addAll(newWay);
+                _waypoints.removeFirst();
+            }
         }
     }
 
     private int pacmanMoveState()
     {
         _waypoints.clear();
-        boolean isChasing = _ghosts[0].remainTimeAsEatable(CODE) > 0.5;
+        boolean isChasing = _ghosts[0].remainTimeAsEatable(CODE) > NO_TIME_TO_CHASE;
         int direction = 0;
         if(isChasing)
             direction = chaseGhost();
@@ -257,12 +300,15 @@ public class Ex3Algo implements PacManAlgo
             boolean isEscaping = false;
             for (GhostCL ghost : _ghosts)
             {
-                Pixel2D ghostPos = pixelFromString(ghost.getPos(CODE));
-                Map2D currentEscape = _map.allDistance(ghostPos, OBSTACLE_COLOR);
-                if (!ghostTooFar(currentEscape))
+                if (ghost.getStatus() != 0)
                 {
-                    isEscaping = true;
-                    escapePlan.addMap2D(currentEscape);
+                    Pixel2D ghostPos = pixelFromString(ghost.getPos(CODE));
+                    Map2D currentEscape = _map.allDistance(ghostPos, OBSTACLE_COLOR);
+                    if (!ghostTooFar(currentEscape))
+                    {
+                        isEscaping = true;
+                        escapePlan.addMap2D(currentEscape);
+                    }
                 }
             }
             if (isEscaping)
@@ -272,7 +318,8 @@ public class Ex3Algo implements PacManAlgo
             }
             else
             {
-                direction = getDirection(_waypoints.removeFirst());
+                if (!_waypoints.isEmpty())
+                    direction = getDirection(_waypoints.removeFirst());
                 return direction;
             }
         }
@@ -281,9 +328,31 @@ public class Ex3Algo implements PacManAlgo
 
     private int escapeGhosts(Map2D escapePlan)
     {
+//        int bestRoute = 0;
+//        int direction = 0;
+//
+//        Pixel2D[] sides = new Index2D[4];
+//        sides[0] = new Index2D(_pos.getX(), _pos.getY() + 1); // the UP neighbor of the current cell
+//        sides[1] = new Index2D(_pos.getX(), _pos.getY() - 1); // the DOWN neighbor of the current cell
+//        sides[2] = new Index2D(_pos.getX() - 1, _pos.getY()); // the LEFT neighbor of the current cell
+//        sides[3] = new Index2D(_pos.getX() + 1, _pos.getY()); // the RIGHT neighbor of the current cell
+//
+//        for (int i = 0; i < sides.length; i++)
+//        {
+//            if (bestRoute < escapePlan.getPixel(sides[i]) && hasNoGhosts(sides[i]) && notInCenter(sides[i]))
+//            {
+//                bestRoute = escapePlan.getPixel(sides[i]);
+//                direction = getDirection(sides[i]);
+//            }
+//        }
+//        return direction;
+        // ================================================
+        Pixel2D target = null;
+        if (!_waypoints.isEmpty())
+            target = _waypoints.removeFirst();
+
         int bestRoute = 0;
         int direction = 0;
-//        int avalibleSides = 0;
 
         Pixel2D[] sides = new Index2D[4];
         sides[0] = new Index2D(_pos.getX(), _pos.getY() + 1); // the UP neighbor of the current cell
@@ -291,14 +360,23 @@ public class Ex3Algo implements PacManAlgo
         sides[2] = new Index2D(_pos.getX() - 1, _pos.getY()); // the LEFT neighbor of the current cell
         sides[3] = new Index2D(_pos.getX() + 1, _pos.getY()); // the RIGHT neighbor of the current cell
 
-        for (int i = 0; i < sides.length; i++)
+        if (target != null && hasNoGhosts(target))
         {
-            if (bestRoute < escapePlan.getPixel(sides[i]) && hasNoGhosts(sides[i]) && notInCenter(sides[i]))
+//            bestRoute = escapePlan.getPixel(target);
+            direction = getDirection(target);
+        }
+        else
+        {
+            for (Pixel2D side : sides)
             {
-                bestRoute = escapePlan.getPixel(sides[i]);
-                direction = getDirection(sides[i]);
+                if (bestRoute < escapePlan.getPixel(side) && hasNoGhosts(side) && notInCenter(side))
+                {
+                    bestRoute = escapePlan.getPixel(side);
+                    direction = getDirection(side);
+                }
             }
         }
+
         return direction;
     }
 

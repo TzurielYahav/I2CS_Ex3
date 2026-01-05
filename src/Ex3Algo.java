@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 /**
  * This is the major algorithmic class for Ex3 - the PacMan game:
- *
+ * 316560499, 4, 8358, 0, 482, 1767628763652, 6, -915428924, 2247922988121988
  * This code is a very simple example (random-walk algorithm).
  * Your task is to implement (here) your PacMan algorithm.
  */
@@ -24,7 +24,7 @@ public class Ex3Algo implements PacManAlgo
     private static final int CODE = 0;
     private final int STATE_CHASE_FRUIT = 0;
     private final int STATE_CHASE_GHOST = 1;
-    private final int ESCAPE_DISTANCE = 3;
+    private final int ESCAPE_DISTANCE = 4;
     private final int CHASE_DISTANCE = 3;
     private static final int OBSTACLE_COLOR = 1;
     private static final int[] FRUIT_COLORS = {
@@ -155,13 +155,13 @@ public class Ex3Algo implements PacManAlgo
             }
         }
         int avalibleEscapeRoutes = 0;
-        if (_map.getPixel(p.getX() + 1, p.getY()) != -1)
+        if (_map.getPixel(p.getX() + 1, p.getY()) != OBSTACLE_COLOR)
             avalibleEscapeRoutes++;
-        if (_map.getPixel(p.getX() - 1, p.getY()) != -1)
+        if (_map.getPixel(p.getX() - 1, p.getY()) != OBSTACLE_COLOR)
             avalibleEscapeRoutes++;
-        if (_map.getPixel(p.getX(), p.getY() + 1) != -1)
+        if (_map.getPixel(p.getX(), p.getY() + 1) != OBSTACLE_COLOR)
             avalibleEscapeRoutes++;
-        if (_map.getPixel(p.getX(), p.getY() - 1) != -1)
+        if (_map.getPixel(p.getX(), p.getY() - 1) != OBSTACLE_COLOR)
             avalibleEscapeRoutes++;
         if (avalibleEscapeRoutes < 2)
             return false;
@@ -314,8 +314,8 @@ public class Ex3Algo implements PacManAlgo
 
         Pixel2D[] sides = new Index2D[4];
         sides[0] = new Index2D(_pos.getX(), _pos.getY() + 1); // the UP neighbor of the current cell
-        sides[2] = new Index2D(_pos.getX() - 1, _pos.getY()); // the LEFT neighbor of the current cell
         sides[1] = new Index2D(_pos.getX(), _pos.getY() - 1); // the DOWN neighbor of the current cell
+        sides[2] = new Index2D(_pos.getX() - 1, _pos.getY()); // the LEFT neighbor of the current cell
         sides[3] = new Index2D(_pos.getX() + 1, _pos.getY()); // the RIGHT neighbor of the current cell
 
         for (int i = 0; i < sides.length; i++)

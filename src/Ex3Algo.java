@@ -19,11 +19,8 @@ public class Ex3Algo implements PacManAlgo
     private Pixel2D _pos;
     private Map _map;
     private GhostCL[] _ghosts;
-    private int _state;             // 0 - chasing fruit, 1 - chasing ghosts
     private PacManAlgo _algo;
     private static final int CODE = 0;
-    private final int STATE_CHASE_FRUIT = 0;
-    private final int STATE_CHASE_GHOST = 1;
     private final int ESCAPE_DISTANCE = 4;
     private final int CHASE_DISTANCE = 3;
     private static final int OBSTACLE_COLOR = 1;
@@ -196,14 +193,11 @@ public class Ex3Algo implements PacManAlgo
         int down = ghostDistances.getPixel(_pos.getX() - 1,_pos.getY());
         int left = ghostDistances.getPixel(_pos.getX(),_pos.getY() - 1);
         int right = ghostDistances.getPixel(_pos.getX(),_pos.getY() + 1);
-        // ================================================================
         for(int i = 0; i < 4 && i < _waypoints.size(); i++)
         {
             if (ghostDistances.getPixel(_waypoints.get(i)) <= i + 1)
                 return false;
         }
-//        return true;
-        // ================================================================
         return ((up >= ESCAPE_DISTANCE ||  up < 0) && (down >= ESCAPE_DISTANCE ||  down < 0) && (left >= ESCAPE_DISTANCE ||  left < 0) && (right >= ESCAPE_DISTANCE ||  right < 0));
     }
 
@@ -224,17 +218,6 @@ public class Ex3Algo implements PacManAlgo
 
     private void chaseFruit(boolean isChasing)
     {
-//        if (_waypoints.isEmpty() || _state != STATE_CHASE_FRUIT)
-//        {
-//            _waypoints.addAll(_map.shortestPath(_pos, FRUIT_COLORS, OBSTACLE_COLOR));
-//            _waypoints.removeFirst();
-//            _state = STATE_CHASE_FRUIT;
-//        }
-//        if (!_waypoints.isEmpty())
-//        {
-//            return getDirection(_waypoints.removeFirst());
-//        }
-        // ===========================================
         Map tmpMap;
         if (isChasing)
         {
@@ -255,8 +238,6 @@ public class Ex3Algo implements PacManAlgo
             _waypoints.addAll(newWay);
             _waypoints.removeFirst();
         }
-//        _state = STATE_CHASE_FRUIT;
-        // ===========================================
     }
 
     private int pacmanMoveState()
@@ -284,24 +265,16 @@ public class Ex3Algo implements PacManAlgo
                     escapePlan.addMap2D(currentEscape);
                 }
             }
-//            printGhosts(_ghosts);
             if (isEscaping)
             {
                 direction = escapeGhosts(escapePlan);
-//                System.out.println("Escape " + direction);
                 return direction;
             }
             else
             {
                 direction = getDirection(_waypoints.removeFirst());
-//                System.out.println(" Fruit " + direction);
                 return direction;
             }
-
-//            if (isEscaping)
-//                return escapeGhosts(escapePlan);
-//            else
-//                return chaseFruit();
         }
         return direction;
     }
@@ -326,38 +299,6 @@ public class Ex3Algo implements PacManAlgo
                 direction = getDirection(sides[i]);
             }
         }
-//        Pixel2D up =
-////        avalibleSides += escapePlan.getPixel(up) > 0 ? 1 : 0;
-//        if (bestRoute < escapePlan.getPixel(up) && hasNoGhosts(up) && notInCenter(up))
-//        {
-//            bestRoute = escapePlan.getPixel(up);
-//            direction = getDirection(up);
-//        }
-//        Pixel2D down =
-////        avalibleSides += escapePlan.getPixel(down) > 0 ? 1 : 0;
-//        if (bestRoute < escapePlan.getPixel(down) && hasNoGhosts(down) && notInCenter(down))
-//        {
-//            bestRoute = escapePlan.getPixel(down);
-//            direction = getDirection(down);
-//        }
-//        Pixel2D left =
-////        avalibleSides += escapePlan.getPixel(left) > 0 ? 1 : 0;
-//        if (bestRoute < escapePlan.getPixel(left) && hasNoGhosts(left) && notInCenter(left))
-//        {
-//            bestRoute = escapePlan.getPixel(left);
-//            direction = getDirection(left);
-//        }
-//        Pixel2D right =
-////        avalibleSides += escapePlan.getPixel(right) > 0 ? 1 : 0;
-//        if (bestRoute < escapePlan.getPixel(right) && hasNoGhosts(right) && notInCenter(right))
-//        {
-//            bestRoute = escapePlan.getPixel(right);
-//            direction = getDirection(right);
-//        }
-////        if (bestRoute < escapePlan.getPixel(_pos))
-////        {
-////            direction = 0;
-////        }
         return direction;
     }
 

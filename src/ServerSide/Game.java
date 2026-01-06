@@ -272,7 +272,7 @@ public class Game implements IGame
             _playerPos = new PointInt2D(11, 14);
             _playerDirection = 4;
             _ghosts = new Ghost[] {
-                    new Ghost(11,11),
+                    new Ghost(11,11, IGhost.TYPE_SMART),
                     new Ghost(11,11),
                     new Ghost(11,11),
                     new Ghost(11,11)

@@ -14,12 +14,14 @@ public interface IGame
     int LEFT = 2;
     int DOWN = 3;
     int RIGHT = 4;
+    String PLAYER_IMG = "player.png";
     String[] images = {
-            "player.png",
             "RedRight.png",
             "RedUp.png",
             "RedLeft.png",
             "RedDown.png",
+            "RedRight.png",
+            "RedRight.png",
             "RedRight.png",
     };
     int FLOOR_VALUE = 0;

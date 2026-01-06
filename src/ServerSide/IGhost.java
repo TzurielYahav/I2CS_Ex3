@@ -15,6 +15,7 @@ public interface IGhost
     int TYPE_SMART = 5;
     int TYPE_TERMINATOR = 6;
 
+
     String getPos();
 
     int getDirection();

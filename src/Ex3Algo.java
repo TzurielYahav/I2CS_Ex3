@@ -22,7 +22,6 @@ public class Ex3Algo implements PacManAlgo
     private Pixel2D _pos;
     private Map _map;
     private GhostCL[] _ghosts;
-    private PacManAlgo _algo;
     private static final int CODE = 0;
     private final int ESCAPE_DISTANCE = 6;
     private final int CHASE_DISTANCE = 3;
@@ -74,7 +73,7 @@ public class Ex3Algo implements PacManAlgo
 			int up = Game.UP, left = Game.LEFT, down = Game.DOWN, right = Game.RIGHT;
 		}
 		_count++;
-        return pacmanMoveState(); // TO DO RUNNING ONLY FROM TRAIL AHEAD
+        return pacmanMoveState();
 	}
 
 	private static void printBoard(int[][] b)
@@ -328,25 +327,6 @@ public class Ex3Algo implements PacManAlgo
 
     private int escapeGhosts(Map2D escapePlan)
     {
-//        int bestRoute = 0;
-//        int direction = 0;
-//
-//        Pixel2D[] sides = new Index2D[4];
-//        sides[0] = new Index2D(_pos.getX(), _pos.getY() + 1); // the UP neighbor of the current cell
-//        sides[1] = new Index2D(_pos.getX(), _pos.getY() - 1); // the DOWN neighbor of the current cell
-//        sides[2] = new Index2D(_pos.getX() - 1, _pos.getY()); // the LEFT neighbor of the current cell
-//        sides[3] = new Index2D(_pos.getX() + 1, _pos.getY()); // the RIGHT neighbor of the current cell
-//
-//        for (int i = 0; i < sides.length; i++)
-//        {
-//            if (bestRoute < escapePlan.getPixel(sides[i]) && hasNoGhosts(sides[i]) && notInCenter(sides[i]))
-//            {
-//                bestRoute = escapePlan.getPixel(sides[i]);
-//                direction = getDirection(sides[i]);
-//            }
-//        }
-//        return direction;
-        // ================================================
         Pixel2D target = null;
         if (!_waypoints.isEmpty())
             target = _waypoints.removeFirst();
@@ -362,7 +342,6 @@ public class Ex3Algo implements PacManAlgo
 
         if (target != null && hasNoGhosts(target))
         {
-//            bestRoute = escapePlan.getPixel(target);
             direction = getDirection(target);
         }
         else

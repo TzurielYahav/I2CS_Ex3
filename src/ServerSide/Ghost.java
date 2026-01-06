@@ -1,4 +1,6 @@
 package ServerSide;
 
-public class Ghost {
+public class Ghost
+{
+
 }

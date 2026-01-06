@@ -2,8 +2,8 @@ package ServerSide;
 
 public class PointInt2D
 {
-    public int _x;
-    public int _y;
+    private final int _x;
+    private final int _y;
 
     public PointInt2D() {this(0,0);}
     public PointInt2D(int x, int y) {_x=x;_y=y;}

@@ -30,7 +30,7 @@ public class GameMain
                 if (_cmd == ' ') {
                     game.play();}
                 if (_cmd == 'q') {
-                    game.end();}
+                    game.end(2);}
                 if (_cmd == 'm') {man.changeGameMode();}
 
                 if (_cmd == 'h')

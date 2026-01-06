@@ -280,8 +280,8 @@ public class Game implements IGame
             _playerDirection = 4;
             _ghosts = new Ghost[] {
                     new Ghost(11,11, IGhost.TYPE_SMART),
-                    new Ghost(11,11),
-                    new Ghost(11,11),
+                    new Ghost(11,11, IGhost.TYPE_SMART),
+                    new Ghost(11,11, IGhost.TYPE_SMART),
                     new Ghost(11,11)
             };
             _map.setCyclic(true);
@@ -329,8 +329,8 @@ public class Game implements IGame
             _pos = new PointInt2D(x, y);
             _prevPos = new PointInt2D(x,y);
             _type = type;
-            if(_type < 1 || _type > 3)
-                _type = 1;
+            if(_type < 0 || _type > 7)
+                _type = 0;
         }
 
         Ghost(Ghost ghost)
@@ -376,10 +376,11 @@ public class Game implements IGame
         
         private void move()
         {
+            System.out.println("CP1");
             int direction = 0;
             if (_type == TYPE_STUPID)
                 direction = randomDirection();
-            if (_type == TYPE_SMART)
+            else if (_type == TYPE_SMART)
                 direction = followPlayer();
             
             if (direction > 4 || direction < 0)
@@ -410,10 +411,15 @@ public class Game implements IGame
         
         private int followPlayer()
         {
+            System.out.println("CP2");
             if (_delay == MOVE_DELAY)
             {
                 _delay = 0;
                 ArrayList<PointInt2D> waypoints = _map.shortestPath(_pos, _playerPos, OBSTACLE_VALUE);
+                if (waypoints != null)
+                    System.out.println(waypoints.getFirst());
+                else
+                    System.out.println("No path found");
                 if (waypoints != null)
                     return getDirection(waypoints.getFirst());
                 return 0;

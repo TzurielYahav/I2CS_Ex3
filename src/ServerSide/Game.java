@@ -373,7 +373,7 @@ public class Game implements IGame
             if (_type == TYPE_STUPID)
                 direction = randomDirection();
             if (_type == TYPE_SMART)
-                direction = randomDirection();
+                direction = followPlayer();
             
             if (direction > 4 || direction < 0)
                 direction = 0;

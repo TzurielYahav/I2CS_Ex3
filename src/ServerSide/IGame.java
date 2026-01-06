@@ -16,6 +16,7 @@ public interface IGame
     int RIGHT = 4;
     String[] images = {
             "player.png",
+            "RedRight.png",
             "RedUp.png",
             "RedLeft.png",
             "RedDown.png",

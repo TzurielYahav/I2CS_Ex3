@@ -1,10 +1,8 @@
 package ClientSide;
 
 import ServerSide.Game;
-import ServerSide.Pixel2D;
 import ServerSide.IGhost;
 
-import java.awt.*;
 import java.util.ArrayList;
 
 public class PacmanAlgo
@@ -62,7 +60,7 @@ public class PacmanAlgo
     {
         _map = new Map();
         _map.init(game.getMap());
-        _pos = game.getPlayerPos();
+        _pos = pixelFromString(game.getPlayerPos());
         _ghosts = game.getGhosts();
         return pacmanMoveState();
     }
@@ -116,9 +114,9 @@ public class PacmanAlgo
 
     private boolean hasNoGhosts(Pixel2D p)
     {
-        for (GhostCL ghost : _ghosts)
+        for (IGhost ghost : _ghosts)
         {
-            if (p.distance2D(pixelFromString(ghost.getPos(CODE))) <= 1)
+            if (p.distance2D(pixelFromString(ghost.getPos())) <= 1)
             {
                 return false;
             }
@@ -139,7 +137,7 @@ public class PacmanAlgo
 
     private Pixel2D getGhostPos(int i)
     {
-        return pixelFromString(_ghosts[i].getPos(CODE));
+        return pixelFromString(_ghosts[i].getPos());
     }
 
     private Map dontEatBigFruits()
@@ -254,7 +252,7 @@ public class PacmanAlgo
     private int pacmanMoveState()
     {
         _waypoints.clear();
-        boolean isChasing = _ghosts[0].remainTimeAsEatable(CODE) > NO_TIME_TO_CHASE;
+        boolean isChasing = _ghosts[0].remainTimeAsEatable() > NO_TIME_TO_CHASE;
         int direction = 0;
         if(isChasing)
             direction = chaseGhost();
@@ -266,11 +264,11 @@ public class PacmanAlgo
 
             Map2D escapePlan = new Map(_map.getWidth(), _map.getHeight(), 0);
             boolean isEscaping = false;
-            for (GhostCL ghost : _ghosts)
+            for (IGhost ghost : _ghosts)
             {
                 if (ghost.getStatus() != 0)
                 {
-                    Pixel2D ghostPos = pixelFromString(ghost.getPos(CODE));
+                    Pixel2D ghostPos = pixelFromString(ghost.getPos());
                     Map2D currentEscape = _map.allDistance(ghostPos, OBSTACLE_COLOR);
                     if (!ghostTooFar(currentEscape))
                     {
@@ -334,7 +332,7 @@ public class PacmanAlgo
         int closestGhost = -1;
         for (int i = 0; i < _ghosts.length; i++)
         {
-            double newClosestDistance = pixelFromString(_ghosts[i].getPos(CODE)).distance2D(_pos);
+            double newClosestDistance = pixelFromString(_ghosts[i].getPos()).distance2D(_pos);
             if (closestDistance > newClosestDistance && newClosestDistance < CHASE_DISTANCE && notInCenter(getGhostPos(i)))
             {
                 closestDistance = newClosestDistance;
@@ -346,7 +344,7 @@ public class PacmanAlgo
 
         Map tmpMap = dontEatBigFruits();
         _waypoints.clear();
-        _waypoints.addAll(tmpMap.shortestPath(_pos, pixelFromString(_ghosts[closestGhost].getPos(CODE)), OBSTACLE_COLOR));
+        _waypoints.addAll(tmpMap.shortestPath(_pos, pixelFromString(_ghosts[closestGhost].getPos()), OBSTACLE_COLOR));
         _waypoints.removeFirst();
         if (!_waypoints.isEmpty())
         {

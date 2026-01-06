@@ -6,13 +6,16 @@ public interface IGhost
     int PLAY = 1;
     int PAUSE = 2;
     double EATABLE_TIMEOUT = 5;
+    int MOVE_DELAY = 3;
+    int TYPE_STUPID = 0;
     int TYPE_RED = 1;
     int TYPE_GREEN = 2;
     int TYPE_BLUE = 3;
+    int TYPE_ORANGE = 4;
+    int TYPE_SMART = 5;
+    int TYPE_TERMINATOR = 6;
 
-    Pixel2D getPos();
-
-    Pixel2D getPrevPos();
+    String getPos();
 
     int getDirection();
 

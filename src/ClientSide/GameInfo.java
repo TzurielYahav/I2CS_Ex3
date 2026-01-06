@@ -2,5 +2,6 @@ package ClientSide;
 
 public class GameInfo
 {
-    public static final int _DT = 50;
+    public static final int _DT = 100;
+
 }

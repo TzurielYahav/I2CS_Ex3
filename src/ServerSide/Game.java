@@ -173,7 +173,7 @@ public class Game implements IGame
     {
         if (!_map.hasColors(new int[] {FRUIT_VALUE, BIG_FRUIT_VALUE}))
         {
-            end();
+            end(1);
         }
     }
 

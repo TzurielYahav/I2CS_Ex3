@@ -156,6 +156,23 @@ public class GameMap
         return ans;
     }
 
+    /**
+     * Checks if the x,y pos is in the map, if not and is cyclic moves it to the other side
+     * @param p The point to move to bounds
+     * @return The corrected pos or (-1,y) | (x,-1) for the part that is out of bounds
+     */
+    public PointInt2D pixelToBounds(PointInt2D p)
+    {
+        if (_cyclicFlag)
+        {
+            return new PointInt2D((p.getX() + _map[0].length) % _map[0].length, (p.getY() + _map.length) % _map.length);
+        }
+        else
+        {
+            return new PointInt2D(p.getX(), p.getY());
+        }
+    }
+
     /// ============== private functions ==============
 
     /**

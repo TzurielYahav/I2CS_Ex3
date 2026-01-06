@@ -24,6 +24,7 @@ public class Game implements IGame
     private double X_Scale;
     private GameMap _map;
     private PointInt2D _playerPos;
+    private int _playerDirection;
     private IGhost _ghosts;
 
 
@@ -110,7 +111,7 @@ public class Game implements IGame
         _lastFrameTime = currentTimeMillis;
 
         // ========= Player ========
-        move(direction);
+        movePlayer(direction);
     }
 
     /// ============== private functions ==============
@@ -119,15 +120,19 @@ public class Game implements IGame
     {
         if (direction > 4 || direction < 0)
             direction = 0;
-        PointInt2D[] directions = {
-                new PointInt2D(_playerPos.getX(), _playerPos.getY() + 1),
-                new PointInt2D(_playerPos.getX() - 1, _playerPos.getY()),
-                new PointInt2D(_playerPos.getX(), _playerPos.getY() - 1),
-                new PointInt2D(_playerPos.getX() + 1, _playerPos.getY()),
-        };
-        if (_map.isInside(directions[direction]))
-            if (_map.getPixel(directions[direction]) != OBSTACLE_VALUE)
-                drawPlayer(directions[direction]);
+        if (direction != 0)
+        {
+            PointInt2D[] directions = {
+                    new PointInt2D(),
+                    new PointInt2D(_playerPos.getX(), _playerPos.getY() + 1),
+                    new PointInt2D(_playerPos.getX() - 1, _playerPos.getY()),
+                    new PointInt2D(_playerPos.getX(), _playerPos.getY() - 1),
+                    new PointInt2D(_playerPos.getX() + 1, _playerPos.getY()),
+            };
+            PointInt2D newPos = _map.pixelToBounds(directions[direction]);
+            if (_map.isInside(newPos))
+                drawPlayer(_map.pixelToBounds(newPos), direction);
+        }
     }
 
     private void DrawGame()
@@ -139,7 +144,7 @@ public class Game implements IGame
         StdDraw.setPenColor(StdDraw.BLACK);
         StdDraw.text(X_Scale / 2, Y_Scale + infoHeight / 2, "'WASD' for movement  |  '1-4' to switch levels  |  'Q' to stop and save");
         drawMap();
-        drawPlayer(_playerPos);
+        drawPlayer(_playerPos, _playerDirection);
     }
 
     private void drawMap()
@@ -173,13 +178,16 @@ public class Game implements IGame
             StdDraw.filledCircle(x, y, bigFruitScale);
     }
 
-    private void drawPlayer(PointInt2D pos)
+    private void drawPlayer(PointInt2D pos, int direction)
     {
         double cellScale = X_Scale / (_map.getWidth() * 2);
         double imageScale = X_Scale / (_map.getWidth() * 1.5);
+
         drawCell(new PointInt2D(_playerPos.getX(), _playerPos.getY()));
-        _playerPos = pos;
-        StdDraw.picture(_playerPos.getX() + cellScale, _playerPos.getY() + cellScale, images[0], imageScale, imageScale);
+        if (_map.getPixel(pos) != OBSTACLE_VALUE)
+            _playerPos = pos;
+
+        StdDraw.picture(_playerPos.getX() + cellScale, _playerPos.getY() + cellScale, images[0], imageScale, imageScale, direction * 90);
     }
 
     private void createLevel(int level)
@@ -212,6 +220,7 @@ public class Game implements IGame
             };
             _map.init(mapArr);
             _playerPos = new PointInt2D(11, 14);
+            _playerDirection = 4;
 //            enemyPos = new PointInt2D(map.getWidth() / 2, map.getHeight() - 1);
             _map.setCyclic(true);
 

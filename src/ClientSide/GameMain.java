@@ -20,7 +20,7 @@ public class GameMain
         Game pacman = new Game();                   //new Game(level);
         pacman.init(GameInfo._DT);
 //        pacman.init(GameInfo.CASE_SCENARIO, GameInfo.MY_ID, GameInfo.CYCLIC_MODE, GameInfo.RANDOM_SEED, GameInfo.RESOLUTION_NORM, GameInfo.DT, -1);
-//        PacManAlgo man = GameInfo.ALGO;
+//        PacmanAlgo man = GameInfo.ALGO;
         while(pacman.getStatus()!= IGame.DONE)
         {
             _cmd = pacman.getKeyChar();
@@ -34,8 +34,9 @@ public class GameMain
                     System.out.println("Pacman help: keys: ' '-start, 'w,a,s,d'-directions, all other parameters should be configured via GameInfo.java, ");
                 }
             }
-//            int  dir = man.move(pacman);
-//            pacman.move(dir);
+            pacman.move(PacmanAlgo.move(pacman));
+
+//            pacman.move(man.move(pacman));
         }
 //        pacman.end();
     }

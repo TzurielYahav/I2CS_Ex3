@@ -1,6 +1,6 @@
 package ServerSide;
 
-public class PointInt2D
+public class PointInt2D implements Pixel2D
 {
     private final int _x;
     private final int _y;
@@ -20,7 +20,7 @@ public class PointInt2D
         return _y;
     }
 
-    public double distance2D(PointInt2D t)
+    public double distance2D(Pixel2D t)
     {
         if (t == null)
             throw new NullPointerException("Pixel2D p2 is null");

@@ -1,7 +1,5 @@
 package ServerSide;
 
-import java.awt.*;
-
 public class Game implements IGame
 {
 
@@ -16,7 +14,7 @@ public class Game implements IGame
     private GameMap _map;
     private PointInt2D _playerPos;
     private int _playerDirection;
-    private IGhost _ghosts;
+    private Ghost[] _ghosts;
 
 
     public Game()
@@ -53,11 +51,29 @@ public class Game implements IGame
         return _gameStatus;
     }
 
+    public int[][] getMap()
+    {
+        return _map.getMap();
+    }
+
     public Character getKeyChar()
     {
         if (StdDraw.hasNextKeyTyped())
             return StdDraw.nextKeyTyped();
         return null;
+    }
+
+    public Pixel2D getPlayerPos()
+    {
+        return _playerPos;
+    }
+
+    public IGhost[] getGhosts()
+    {
+        IGhost[] ghosts = new IGhost[_ghosts.length];
+        for (int i = 0; i < _ghosts.length; i++)
+            ghosts[i] = new Ghost(_ghosts[i]);
+        return ghosts;
     }
 
     public void play()
@@ -66,7 +82,6 @@ public class Game implements IGame
         _gameStartTime = System.currentTimeMillis();
         _lastFrameTime = System.currentTimeMillis();
         DrawGame();
-
     }
 
     public void end()
@@ -138,7 +153,7 @@ public class Game implements IGame
 
     private void checkVictory()
     {
-        if (_map.hasColors(new int[] {FRUIT_VALUE, BIG_FRUIT_VALUE}))
+        if (!_map.hasColors(new int[] {FRUIT_VALUE, BIG_FRUIT_VALUE}))
         {
             end();
         }
@@ -154,6 +169,7 @@ public class Game implements IGame
         StdDraw.text(X_Scale / 2, Y_Scale + infoHeight / 2, "'WASD' for movement  |  '1-4' to switch levels  |  'Q' to stop and save");
         drawMap();
         drawPlayer(_playerPos, _playerDirection);
+        drawGhosts();
     }
 
     private void drawMap()
@@ -199,6 +215,20 @@ public class Game implements IGame
         StdDraw.picture(_playerPos.getX() + cellScale, _playerPos.getY() + cellScale, images[0], imageScale, imageScale, direction * 90);
     }
 
+    private void drawGhosts()
+    {
+        for (Ghost ghost : _ghosts)
+        {
+            drawCell(ghost.getPrevPos());
+        }
+        for (Ghost ghost : _ghosts)
+        {
+            double cellScale = X_Scale / (_map.getWidth() * 2);
+            double imageScale = X_Scale / (_map.getWidth() * 1.5);
+            StdDraw.picture(ghost.getPos().getX() + cellScale, ghost.getPos().getY() + cellScale, images[ghost.getType()], imageScale, imageScale, ghost.getDirection() * 90);
+        }
+    }
+
     private void createLevel(int level)
     {
         if (level == 1)
@@ -230,7 +260,12 @@ public class Game implements IGame
             _map.init(mapArr);
             _playerPos = new PointInt2D(11, 14);
             _playerDirection = 4;
-//            enemyPos = new PointInt2D(map.getWidth() / 2, map.getHeight() - 1);
+            _ghosts = new Ghost[] {
+                    new Ghost(11,11),
+                    new Ghost(11,11),
+                    new Ghost(11,11),
+                    new Ghost(11,11)
+            };
             _map.setCyclic(true);
 
         }

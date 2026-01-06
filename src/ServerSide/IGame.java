@@ -15,7 +15,11 @@ public interface IGame
     int DOWN = 3;
     int RIGHT = 4;
     String[] images = {
-            "player.png"
+            "player.png",
+            "RedUp.png",
+            "RedLeft.png",
+            "RedDown.png",
+            "RedRight.png",
     };
     int FLOOR_VALUE = 0;
     int OBSTACLE_VALUE = 1;

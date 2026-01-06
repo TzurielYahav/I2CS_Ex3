@@ -141,8 +141,8 @@ public class GameMap
         {
             for (int i = 0; i < _map[0].length; i++)
             {
-                for (int k = 0; k < colors.length; k++)
-                    if (_map[j][i] == colors[k])
+                for (int color : colors)
+                    if (_map[j][i] == color)
                         return true;
             }
         }

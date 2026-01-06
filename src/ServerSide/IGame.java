@@ -1,5 +1,7 @@
 package ServerSide;
 
+import java.awt.*;
+
 public interface IGame
 {
     int INIT = 0;
@@ -12,5 +14,18 @@ public interface IGame
     int LEFT = 2;
     int DOWN = 3;
     int RIGHT = 4;
-
+    String[] images = {
+            "player.png"
+    };
+    int FLOOR_VALUE = 0;
+    int OBSTACLE_VALUE = 1;
+    int FRUIT_VALUE = 2;
+    int BIG_FRUIT_VALUE = 3;
+    Color[] COLORS = new Color[4];
+    int FRUIT_SCORE = 10;
+    int BIG_FRUIT_SCORE = 50;
+    int GHOST_SCORE = 200;
+    int INFO_Y_HEIGHT = 50;
+    int CANVAS_WIDTH = 800;
+    int CANVAS_HEIGHT = CANVAS_WIDTH + INFO_Y_HEIGHT;
 }

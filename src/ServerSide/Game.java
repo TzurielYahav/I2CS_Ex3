@@ -4,20 +4,7 @@ import java.awt.*;
 
 public class Game implements IGame
 {
-    private static final String[] images = {
-            "player.png"
-    };
-    private static final int FLOOR_VALUE = 0;
-    private static final int OBSTACLE_VALUE = 1;
-    private static final int FRUIT_VALUE = 2;
-    private static final int BIG_FRUIT_VALUE = 3;
-    private static final Color[] COLORS = new Color[4];
-    private static final int FRUIT_SCORE = 10;
-    private static final int BIG_FRUIT_SCORE = 50;
-    private static final int GHOST_SCORE = 200;
-    private static final int INFO_Y_HEIGHT = 50;
-    private static final int CANVAS_WIDTH = 800;
-    private static final int CANVAS_HEIGHT = CANVAS_WIDTH + INFO_Y_HEIGHT;
+
 
     private int _gameStatus;
     private int _score;
@@ -58,24 +45,7 @@ public class Game implements IGame
         COLORS[FRUIT_VALUE] = StdDraw.PINK;
         COLORS[BIG_FRUIT_VALUE] = StdDraw.GREEN;
 
-        // ====================================================
-//        enemyDelayTimer = 0;
-//        playerPos = new PointInt2D(0, 0);
-//        enemyPos = new PointInt2D(_map.getWidth() - 1, _map.getHeight() - 1);
-//        for (int i = 0; i < _map.getWidth(); i++)
-//        {
-//            for (int j = 0; j < _map.getHeight(); j++)
-//            {
-//                if (_map.getPixel(i, j) == PLAYER_VALUE)
-//                    playerPos = new PointInt2D(i, j);
-//                else if (_map.getPixel(i, j) == ENEMY_VALUE)
-//                    enemyPos = new PointInt2D(i, j);
-//            }
-//        }
-//        targetPos = playerPos;
-//        drawMap();
-//        drawCharacter(playerPos, playerPos, PLAYER_VALUE);
-//        drawCharacter(enemyPos, enemyPos, ENEMY_VALUE);
+        // =======================================
     }
 
     public int getStatus()

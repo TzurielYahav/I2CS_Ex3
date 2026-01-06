@@ -12,11 +12,15 @@ public class Game implements IGame
     private static final int FRUIT_VALUE = 2;
     private static final int BIG_FRUIT_VALUE = 3;
     private static final Color[] COLORS = new Color[4];
+    private static final int FRUIT_SCORE = 10;
+    private static final int BIG_FRUIT_SCORE = 50;
+    private static final int GHOST_SCORE = 200;
     private static final int INFO_Y_HEIGHT = 50;
     private static final int CANVAS_WIDTH = 800;
     private static final int CANVAS_HEIGHT = CANVAS_WIDTH + INFO_Y_HEIGHT;
 
     private int _gameStatus;
+    private int _score;
     private long _gameStartTime;
     private long _lastFrameTime = 0;
     private int _dt;
@@ -112,6 +116,9 @@ public class Game implements IGame
 
         // ========= Player ========
         movePlayer(direction);
+
+        // ========= Check victory ========
+
     }
 
     /// ============== private functions ==============
@@ -132,6 +139,38 @@ public class Game implements IGame
             PointInt2D newPos = _map.pixelToBounds(directions[direction]);
             if (_map.isInside(newPos))
                 drawPlayer(_map.pixelToBounds(newPos), direction);
+        }
+        hasEatenFruit();
+    }
+
+    private void hasEatenFruit()
+    {
+        if (_map.getPixel(_playerPos) == FRUIT_VALUE)
+        {
+            _map.setPixel(_playerPos, FLOOR_VALUE);
+            _score += FRUIT_SCORE;
+            checkVictory();
+        }
+        else if (_map.getPixel(_playerPos) == BIG_FRUIT_VALUE)
+        {
+            _map.setPixel(_playerPos, FLOOR_VALUE);
+            _score += BIG_FRUIT_SCORE;
+            canEatGhosts();
+            checkVictory();
+        }
+    }
+
+    private void canEatGhosts()
+    {
+        /// To do
+
+    }
+
+    private void checkVictory()
+    {
+        if (_map.hasColors(new int[] {FRUIT_VALUE, BIG_FRUIT_VALUE}))
+        {
+            end();
         }
     }
 

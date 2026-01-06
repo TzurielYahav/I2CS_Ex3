@@ -135,6 +135,20 @@ public class GameMap
         }
     }
 
+    public boolean hasColors(int[] colors)
+    {
+        for (int j = 0; j < _map.length; j++)
+        {
+            for (int i = 0; i < _map[0].length; i++)
+            {
+                for (int k = 0; k < colors.length; k++)
+                    if (_map[j][i] == colors[k])
+                        return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Fills this map with the new color (new_v) starting from p.
      * <a href="https://en.wikipedia.org/wiki/Flood_fill">...</a>

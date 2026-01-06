@@ -12,7 +12,7 @@ public class Game implements IGame
     private double Y_Scale;
     private double X_Scale;
     private GameMap _map;
-    private PointInt2D _playerPos;
+    private Pixel2D _playerPos;
     private int _playerDirection;
     private Ghost[] _ghosts;
 
@@ -114,14 +114,14 @@ public class Game implements IGame
             direction = 0;
         if (direction != 0)
         {
-            PointInt2D[] directions = {
+            Pixel2D[] directions = {
                     new PointInt2D(),
                     new PointInt2D(_playerPos.getX(), _playerPos.getY() + 1),
                     new PointInt2D(_playerPos.getX() - 1, _playerPos.getY()),
                     new PointInt2D(_playerPos.getX(), _playerPos.getY() - 1),
                     new PointInt2D(_playerPos.getX() + 1, _playerPos.getY()),
             };
-            PointInt2D newPos = _map.pixelToBounds(directions[direction]);
+            Pixel2D newPos = _map.pixelToBounds(directions[direction]);
             if (_map.isInside(newPos))
                 drawPlayer(_map.pixelToBounds(newPos), direction);
         }
@@ -203,7 +203,7 @@ public class Game implements IGame
             StdDraw.filledCircle(x, y, bigFruitScale);
     }
 
-    private void drawPlayer(PointInt2D pos, int direction)
+    private void drawPlayer(Pixel2D pos, int direction)
     {
         double cellScale = X_Scale / (_map.getWidth() * 2);
         double imageScale = X_Scale / (_map.getWidth() * 1.5);

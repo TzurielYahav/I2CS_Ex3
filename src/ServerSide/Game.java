@@ -416,12 +416,12 @@ public class Game implements IGame
             {
                 _delay = 0;
                 ArrayList<PointInt2D> waypoints = _map.shortestPath(_pos, _playerPos, OBSTACLE_VALUE);
+
                 if (waypoints != null)
-                    System.out.println(waypoints.getFirst());
-                else
-                    System.out.println("No path found");
-                if (waypoints != null)
+                {
+                    waypoints.removeFirst();
                     return getDirection(waypoints.getFirst());
+                }
                 return 0;
             }
             _delay++;

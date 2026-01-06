@@ -76,11 +76,11 @@ public class GameMap
 
     public int getPixel(int x, int y)
     {
-        PointInt2D p = new PointInt2D(x,y);
+        Pixel2D p = new PointInt2D(x,y);
         return getPixel(p);
     }
 
-    public int getPixel(PointInt2D p)
+    public int getPixel(Pixel2D p)
     {
         p = pixelToBounds(p.getX(), p.getY());
         if (!isInside(p))
@@ -95,7 +95,7 @@ public class GameMap
         _map[y][x] = v;
     }
 
-    public void setPixel(PointInt2D p, int v)
+    public void setPixel(Pixel2D p, int v)
     {
         if (!isInside(p))
             throw new IllegalArgumentException("Pixel2D is not inside the map");
@@ -109,7 +109,7 @@ public class GameMap
 
     public void setCyclic(boolean cy) {_cyclicFlag = cy;}
 
-    public boolean isInside(PointInt2D p)
+    public boolean isInside(Pixel2D p)
     {
         if (p == null)
             throw new NullPointerException("Pixel2D p is null");
@@ -118,7 +118,7 @@ public class GameMap
         return false;
     }
 
-    public void drawRect(PointInt2D p1, PointInt2D p2, int color)
+    public void drawRect(Pixel2D p1, Pixel2D p2, int color)
     {
         if (!isInside(p1) || !isInside(p2))
             throw new RuntimeException("p1 or p2 is out of range");
@@ -157,7 +157,7 @@ public class GameMap
      * @param xy The pos to start filling from
      * @param new_v The new value to fill
      */
-    public int fill(PointInt2D xy, int new_v)
+    public int fill(Pixel2D xy, int new_v)
     {
         if (!isInside(xy))
             throw new RuntimeException("xy is out of range");
@@ -175,7 +175,7 @@ public class GameMap
      * @param p The point to move to bounds
      * @return The corrected pos or (-1,y) | (x,-1) for the part that is out of bounds
      */
-    public PointInt2D pixelToBounds(PointInt2D p)
+    public Pixel2D pixelToBounds(Pixel2D p)
     {
         if (_cyclicFlag)
         {
@@ -197,11 +197,11 @@ public class GameMap
      * @param color The new color to fill
      * @return The number of cells filled
      */
-    private int fillPixels(PointInt2D p1, int oldColor, int color)
+    private int fillPixels(Pixel2D p1, int oldColor, int color)
     {
         int ans = 0;
 
-        PointInt2D currentP = pixelToBounds(p1.getX(), p1.getY());    // checks if p1 is in the map (if not and is cyclic then moves the point to the other side)
+        Pixel2D currentP = pixelToBounds(p1.getX(), p1.getY());    // checks if p1 is in the map (if not and is cyclic then moves the point to the other side)
         if (isInside(currentP) && getPixel(currentP) == oldColor)       // checks if the new corrected point is inside the map and if the color is oldColor
         {
             ans = 1;                                                    // add this cell to the number of cells filled
@@ -220,7 +220,7 @@ public class GameMap
      * @param y The y pos
      * @return The corrected pos or (-1,y) | (x,-1) for the part that is out of bounds
      */
-    private PointInt2D pixelToBounds(int x, int y)
+    private Pixel2D pixelToBounds(int x, int y)
     {
         if (_cyclicFlag)
         {

@@ -1,6 +1,6 @@
 package ServerSide;
 
- public interface IGhost
+public interface IGhost
 {
     int INIT = 0;
     int PLAY = 1;

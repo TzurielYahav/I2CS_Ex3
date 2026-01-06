@@ -1,5 +1,4 @@
 package ServerSide;
-import ServerSide.Pixel2D;
 
 public class Ghost implements IGhost
 {

@@ -183,7 +183,7 @@ public class Game implements IGame
         }
     }
 
-    private void drawCell(PointInt2D pos)
+    private void drawCell(Pixel2D pos)
     {
         double cellScale = X_Scale / (_map.getWidth() * 2);
         double fruitScale = X_Scale / (_map.getWidth() * 7);

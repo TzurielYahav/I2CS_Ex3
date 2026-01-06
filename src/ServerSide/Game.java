@@ -19,6 +19,7 @@ public class Game implements IGame
     private int _gameStatus;
     private long _gameStartTime;
     private long _lastFrameTime = 0;
+    private int _dt;
     private double Y_Scale;
     private double X_Scale;
     private GameMap _map;
@@ -28,12 +29,18 @@ public class Game implements IGame
 
     public Game()
     {
-        init();
+        init(50);
     }
 
-    public void init()
+    public Game(int dt)
+    {
+        init(dt);
+    }
+
+    public void init(int dt)
     {
         _gameStatus = INIT;
+        _dt = dt;
         _map = new GameMap();
         createLevel(1);
 
@@ -92,16 +99,36 @@ public class Game implements IGame
         _gameStatus = IGame.DONE;
     }
 
-    public void move()
+    public void move(int direction)
     {
         long currentTimeMillis = System.currentTimeMillis();
-        if (currentTimeMillis - _lastFrameTime > 1000)
+        long elapsedFrameTimeMillis = currentTimeMillis - _lastFrameTime;
+        if (elapsedFrameTimeMillis < _dt)
         {
-            _lastFrameTime = currentTimeMillis;
+            StdDraw.pause((int) (_dt - elapsedFrameTimeMillis));
         }
+        _lastFrameTime = currentTimeMillis;
+
+        // ========= Player ========
+        move(direction);
     }
 
     /// ============== private functions ==============
+
+    private void movePlayer(int direction)
+    {
+        if (direction > 4 || direction < 0)
+            direction = 0;
+        PointInt2D[] directions = {
+                new PointInt2D(_playerPos.getX(), _playerPos.getY() + 1),
+                new PointInt2D(_playerPos.getX() - 1, _playerPos.getY()),
+                new PointInt2D(_playerPos.getX(), _playerPos.getY() - 1),
+                new PointInt2D(_playerPos.getX() + 1, _playerPos.getY()),
+        };
+        if (_map.isInside(directions[direction]))
+            if (_map.getPixel(directions[direction]) != OBSTACLE_VALUE)
+                drawPlayer(directions[direction]);
+    }
 
     private void DrawGame()
     {

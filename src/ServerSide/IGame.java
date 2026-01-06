@@ -8,10 +8,9 @@ public interface IGame
     int DONE = 3;
     int ERR = -1;
     int STAY = 0;
-    int LEFT = 2;
-    int RIGHT = 4;
     int UP = 1;
+    int LEFT = 2;
     int DOWN = 3;
-
+    int RIGHT = 4;
 
 }

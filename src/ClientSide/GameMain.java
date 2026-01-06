@@ -18,7 +18,7 @@ public class GameMain
     public static void play()
     {
         Game pacman = new Game();                   //new Game(level);
-        pacman.init();
+        pacman.init(GameInfo._DT);
 //        pacman.init(GameInfo.CASE_SCENARIO, GameInfo.MY_ID, GameInfo.CYCLIC_MODE, GameInfo.RANDOM_SEED, GameInfo.RESOLUTION_NORM, GameInfo.DT, -1);
 //        PacManAlgo man = GameInfo.ALGO;
         while(pacman.getStatus()!= IGame.DONE)

@@ -1,7 +1,5 @@
 package ServerSide;
 
-import ClientSide.Pixel2D;
-
 import java.util.ArrayList;
 
 public class Game implements IGame
@@ -88,7 +86,7 @@ public class Game implements IGame
         DrawGame();
     }
 
-    public void end()
+    public void end(int status)
     {
         _gameStatus = IGame.DONE;
     }
@@ -104,6 +102,9 @@ public class Game implements IGame
             // ========= Player ========
             movePlayer(direction);
 
+            // ========= Ghost ========
+            moveGhosts();
+
             // ========= Check victory ========
 
         }
@@ -113,10 +114,16 @@ public class Game implements IGame
 
     private void moveGhosts()
     {
-        for (int i = 0; i < _ghosts.length; i++)
+        boolean eatenPlayer = false;
+        for (Ghost ghost : _ghosts)
         {
-            
+            ghost.move();
+            if (ghost._pos.equals(_playerPos))
+                eatenPlayer = true;
         }
+        drawGhosts();
+        if (eatenPlayer)
+            end(0);
     }
     
     private void movePlayer(int direction)
@@ -223,7 +230,7 @@ public class Game implements IGame
         if (_map.getPixel(pos) != OBSTACLE_VALUE)
             _playerPos = pos;
 
-        StdDraw.picture(_playerPos.getX() + cellScale, _playerPos.getY() + cellScale, images[0], imageScale, imageScale, direction * 90);
+        StdDraw.picture(_playerPos.getX() + cellScale, _playerPos.getY() + cellScale, PLAYER_IMG, imageScale, imageScale, direction * 90);
     }
 
     private void drawGhosts()

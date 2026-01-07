@@ -19,6 +19,7 @@ public interface IGhost
     int TYPE_TERMINATOR = 6;
     int AMOUNT_OF_TYPES = 7;
     PointInt2D BASE = new PointInt2D(11,11);
+    PointInt2D OUT_OF_GATE = new PointInt2D(11,14);
 
 
     String getPos();

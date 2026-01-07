@@ -10,7 +10,7 @@ public class Game implements IGame
     private int _score;
     private long _gameStartTime;
     private long _lastFrameTime = 0;
-    private int _ghostStartTime = 3;
+    private int _ghostStartTime = 3000;
     private int _ghostEndTime;
     private int _dt;
     private double Y_Scale;
@@ -107,7 +107,11 @@ public class Game implements IGame
             movePlayer(direction);
 
             // ========= Ghost ========
+            Ghost.addDelayCount();
             moveGhosts();
+            if (Ghost._delay == IGhost.MOVE_DELAY)
+                Ghost.resetDelay();
+
 
             // ========= Check victory ========
             drawGhosts();
@@ -128,12 +132,15 @@ public class Game implements IGame
         for (Ghost ghost : _ghosts)
         {
             ghost.move();
-            if (ghost._pos.equals(_playerPos) && ghost._status == PLAY)
+            if (ghost._pos.equals(_playerPos))
             {
                 if (ghost.isEatable())
                 {
-                    ghost.setFleeing();
-                    _score += GHOST_SCORE;
+                    if (ghost._status != IGhost.FLEE)
+                    {
+                        ghost.setFleeing();
+                        _score += GHOST_SCORE;
+                    }
                 }
                 else
                     hasEatenPlayer = true;
@@ -242,8 +249,6 @@ public class Game implements IGame
         StdDraw.setPenColor(COLORS[FLOOR_VALUE]);
         StdDraw.filledRectangle(x, y, cellScale, cellScale);
 
-        System.out.println("DrawCell " + x + ", " + y);
-
         StdDraw.setPenColor(COLORS[_map.getPixel(pos)]);
         if (_map.getPixel(pos) == OBSTACLE_VALUE)
             StdDraw.filledRectangle(x, y, cellScale, cellScale);
@@ -266,8 +271,6 @@ public class Game implements IGame
     {
         for (Ghost ghost : _ghosts)
         {
-            System.out.println(ghost.getPrevPos() + "  |  " + ghost.getPos());
-            System.out.println(" Status                 " + ghost._status);
             drawCell(ghost.getPrevPos());
         }
         for (Ghost ghost : _ghosts)
@@ -275,7 +278,6 @@ public class Game implements IGame
             double cellScale = X_Scale / (_map.getWidth() * 2);
             double imageScale = X_Scale / (_map.getWidth() * 1.5);
             String image;
-            System.out.println("Draw Picture:  " + ghost.getPointPos().getX() + cellScale + " , " + ghost.getPointPos().getY() + cellScale);
             if (ghost._status == IGhost.FLEE)
                 image = ghostImages[1];
             else if (ghost._status == IGhost.CONFUSED)
@@ -320,6 +322,8 @@ public class Game implements IGame
             _playerDirection = 4;
             _ghosts = new Ghost[] {
                     new StupidGhost(11,11),
+                    new RedGhost(11,11),
+                    new BlueGhost(11,11),
             };
             _map.setCyclic(true);
 
@@ -644,7 +648,7 @@ public class Game implements IGame
         private long _lastGreen = 0;
         private int _status;
         private int _dir = 1;
-        private int _delay = 0;
+        private static int _delay = 0;
         private boolean _didTurn180 = false;
 
         Ghost(PointInt2D pos, int type)
@@ -739,6 +743,16 @@ public class Game implements IGame
             _didTurn180 = false;
         }
 
+        public static void resetDelay()
+        {
+            _delay = 0;
+        }
+
+        public static void addDelayCount()
+        {
+            _delay++;
+        }
+
         public void move()
         {
             if (_status == FLEE)
@@ -796,7 +810,10 @@ public class Game implements IGame
                         }
                     }
                 }
-                moveToDirection(getDirectionFromPoint(target));
+                if (target.equals(_pos))
+                    moveToDirection(turn180());
+                else
+                    moveToDirection(getDirectionFromPoint(target));
             }
             else
                 moveToDirection(turn180());
@@ -808,10 +825,11 @@ public class Game implements IGame
         {
             if (_delay == MOVE_DELAY)
             {
-                _delay = 0;
                 if (!_didTurn180)
+                {
                     moveToDirection(turn180());
-
+                    return;
+                }
                 PointInt2D target = new PointInt2D(_pos);
                 double bestOption = Double.MAX_VALUE;
                 double distToPlayer = _pos.distance2D(_playerPos);
@@ -843,7 +861,39 @@ public class Game implements IGame
                 else
                     moveToDirection(getDirectionFromPoint(target));
             }
-            _delay++;
+        }
+
+        public int coloredGhostMove(PointInt2D aimPoint)
+        {
+            if (_delay == MOVE_DELAY)
+            {
+                if (!_didTurn180)
+                    return turn180();
+
+                PointInt2D target = new PointInt2D(_pos);
+                double distToPlayer = Double.MAX_VALUE;
+                PointInt2D[] directions = {
+                        new PointInt2D(),
+                        new PointInt2D(_pos.getX(), _pos.getY() + 1),
+                        new PointInt2D(_pos.getX() - 1, _pos.getY()),
+                        new PointInt2D(_pos.getX(), _pos.getY() - 1),
+                        new PointInt2D(_pos.getX() + 1, _pos.getY()),
+                };
+                for (int i = 1; i < 5; i++)
+                {
+                    if (i % 4 != (_dir + 2) % 4)
+                    {
+                        PointInt2D p = _map.pixelToBounds(directions[i]);
+                        if (_map.getPixel(p) != OBSTACLE_VALUE && p.distance2D(aimPoint) < distToPlayer)
+                        {
+                            target = p;
+                            distToPlayer = p.distance2D(aimPoint);
+                        }
+                    }
+                }
+                return getDirectionFromPoint(target);
+            }
+            return 0;
         }
 
         private int getDirectionFromPoint(PointInt2D dir)
@@ -883,7 +933,10 @@ public class Game implements IGame
         private int turn180()
         {
             _didTurn180 = true;
-            return (_dir + 2) % 4;
+            int dir = (_dir + 2) % 4;
+            if (dir == 0)
+                dir = 4;
+            return dir;
         }
 
         private int randomDirection()
@@ -903,8 +956,13 @@ public class Game implements IGame
         public void move()
         {
             super.move();
-            if (super._status == PLAY)
-                moveConfused();
+            if (getStatus() == PLAY)
+            {
+                if (getPointPos().distance2D(BASE) <= 1)
+                    super.moveToDirection(coloredGhostMove(OUT_OF_GATE));
+                else
+                    moveConfused();
+            }
         }
     }
 
@@ -927,7 +985,6 @@ public class Game implements IGame
         {
             if (super._delay == MOVE_DELAY)
             {
-                super._delay = 0;
                 ArrayList<PointInt2D> waypoints = _map.shortestPath(super._pos, _playerPos, OBSTACLE_VALUE);
 
                 if (waypoints != null)
@@ -937,7 +994,6 @@ public class Game implements IGame
                 }
                 return 0;
             }
-            super._delay++;
             return 0;
         }
     }
@@ -953,43 +1009,18 @@ public class Game implements IGame
         public void move()
         {
             super.move();
-            if (super._status == PLAY)
-                super.moveToDirection(redAlgo());
+            if (getStatus() == PLAY)
+            {
+                if (getPointPos().distance2D(BASE) <= 1)
+                    super.moveToDirection(coloredGhostMove(OUT_OF_GATE));
+                else
+                    super.moveToDirection(redAlgo());
+            }
         }
 
         private int redAlgo()
         {
-            if (super._delay == MOVE_DELAY)
-            {
-                super._delay = 0;
-                if (!super._didTurn180)
-                    return super.turn180();
-
-                PointInt2D target = new PointInt2D(super._pos);
-                double distToPlayer = Double.MAX_VALUE;
-                PointInt2D[] directions = {
-                        new PointInt2D(),
-                        new PointInt2D(super._pos.getX(), super._pos.getY() + 1),
-                        new PointInt2D(super._pos.getX() - 1, super._pos.getY()),
-                        new PointInt2D(super._pos.getX(), super._pos.getY() - 1),
-                        new PointInt2D(super._pos.getX() + 1, super._pos.getY()),
-                };
-                for (int i = 1; i < 5; i++)
-                {
-                    if (i % 4 != (super._dir + 2) % 4)
-                    {
-                        PointInt2D p = _map.pixelToBounds(directions[i]);
-                        if (_map.getPixel(p) != OBSTACLE_VALUE && p.distance2D(_playerPos) < distToPlayer)
-                        {
-                            target = p;
-                            distToPlayer = p.distance2D(_playerPos);
-                        }
-                    }
-                }
-                return super.getDirectionFromPoint(target);
-            }
-            super._delay++;
-            return 0;
+            return coloredGhostMove(_playerPos);
         }
     }
 
@@ -1004,45 +1035,18 @@ public class Game implements IGame
         public void move()
         {
             super.move();
-            if (super._status == PLAY)
-                super.moveToDirection(blueAlgo());
+            if (getStatus() == PLAY)
+            {
+                if (getPointPos().distance2D(BASE) <= 1)
+                    super.moveToDirection(coloredGhostMove(OUT_OF_GATE));
+                else
+                    super.moveToDirection(blueAlgo());
+            }
         }
 
         private int blueAlgo()
         {
-            if (super._delay == MOVE_DELAY)
-            {
-                super._delay = 0;
-                if (!super._didTurn180)
-                    return super.turn180();
-
-                PointInt2D aimPoint = findAimPoint();
-
-                PointInt2D target = new PointInt2D(super._pos);
-                double distToPlayer = Double.MAX_VALUE;
-                PointInt2D[] directions = {
-                        new PointInt2D(),
-                        new PointInt2D(super._pos.getX(), super._pos.getY() + 1),
-                        new PointInt2D(super._pos.getX() - 1, super._pos.getY()),
-                        new PointInt2D(super._pos.getX(), super._pos.getY() - 1),
-                        new PointInt2D(super._pos.getX() + 1, super._pos.getY()),
-                };
-                for (int i = 1; i < 5; i++)
-                {
-                    if (i % 4 != (super._dir + 2) % 4)
-                    {
-                        PointInt2D p = _map.pixelToBounds(directions[i]);
-                        if (_map.getPixel(p) != OBSTACLE_VALUE && p.distance2D(_playerPos) < distToPlayer)
-                        {
-                            target = p;
-                            distToPlayer = p.distance2D(_playerPos);
-                        }
-                    }
-                }
-                return super.getDirectionFromPoint(target);
-            }
-            super._delay++;
-            return 0;
+            return coloredGhostMove(findAimPoint());
         }
 
         private PointInt2D findAimPoint()
@@ -1072,6 +1076,37 @@ public class Game implements IGame
             if (distToRed > 0)
                 aimPoint = new PointInt2D((int)(distToRed * Math.sin(angleToRed)), (int)(distToRed * Math.cos(angleToRed)));
             return aimPoint;
+        }
+    }
+
+    private class PinkGhost extends Ghost
+    {
+        PinkGhost(int x, int y)
+        {
+            super(x, y, TYPE_PINK);
+        }
+
+        @Override
+        public void move()
+        {
+            super.move();
+            if (getStatus() == PLAY)
+            {
+                if (getPointPos().distance2D(BASE) <= 1)
+                    super.moveToDirection(coloredGhostMove(OUT_OF_GATE));
+                else
+                    super.moveToDirection(pinkAlgo());
+            }
+        }
+
+        private int pinkAlgo()
+        {
+            return coloredGhostMove(findAimPoint());
+        }
+
+        private PointInt2D findAimPoint()
+        {
+            return new PointInt2D(_playerPos.getX(), _playerPos.getY() + 2);
         }
     }
 }

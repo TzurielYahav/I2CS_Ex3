@@ -10,7 +10,7 @@ public class Game implements IGame
     private int _score;
     private long _gameStartTime;
     private long _lastFrameTime = 0;
-    private int _ghostStartTime = 3000;
+    private int _ghostStartTime = 1000;
     private int _ghostEndTime;
     private int _dt;
     private double Y_Scale;
@@ -321,7 +321,7 @@ public class Game implements IGame
             _playerLastPos = new PointInt2D(11, 14);
             _playerDirection = 4;
             _ghosts = new Ghost[] {
-                    new StupidGhost(11,11),
+                    new PinkGhost(11,11),
                     new RedGhost(11,11),
                     new BlueGhost(11,11),
             };
@@ -1106,7 +1106,16 @@ public class Game implements IGame
 
         private PointInt2D findAimPoint()
         {
-            return new PointInt2D(_playerPos.getX(), _playerPos.getY() + 2);
+            if (_playerDirection == 1)
+                return new PointInt2D(_playerPos.getX(), _playerPos.getY() + 4);
+            else if (_playerDirection == 2)
+                return new PointInt2D(_playerPos.getX() - 4, _playerPos.getY());
+            else if (_playerDirection == 3)
+                return new PointInt2D(_playerPos.getX(), _playerPos.getY() - 4);
+            else if (_playerDirection == 4)
+                return new PointInt2D(_playerPos.getX() + 4, _playerPos.getY());
+            else
+                return new PointInt2D(_playerPos);
         }
     }
 }

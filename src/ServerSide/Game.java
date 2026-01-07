@@ -202,8 +202,8 @@ public class Game implements IGame
         StdDraw.clear();
         drawMap();
         drawInfo();
-        drawGhosts();
-        drawPlayer();
+//        drawGhosts();
+//        drawPlayer();
     }
 
     private void drawInfo()

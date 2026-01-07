@@ -301,6 +301,8 @@ public class Game implements IGame
             _playerDirection = 4;
             _ghosts = new Ghost[] {
                     new RedGhost(11,11),
+                    new SmartGhost(11,11),
+                    new RedGhost(11,11),
             };
             _map.setCyclic(true);
 

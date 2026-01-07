@@ -231,7 +231,8 @@ public class PacmanAlgo
             tmpMap = new Map(_map.getMap());
             for (int i = 0; i < _ghosts.length; i++)
             {
-                tmpMap.setPixel(getGhostPos(i), OBSTACLE_COLOR);
+                if (_ghosts[i].getStatus() == IGhost.PLAY)
+                    tmpMap.setPixel(getGhostPos(i), OBSTACLE_COLOR);
             }
         }
         Pixel2D loneFruit = findLoneFruit(tmpMap);
@@ -256,7 +257,6 @@ public class PacmanAlgo
         int direction = 0;
         if(isChasing)
             direction = chaseGhost();
-        System.out.println("is chasing? " + isChasing);
         if (direction == 0)
         {
             chaseFruit(isChasing);
@@ -278,7 +278,6 @@ public class PacmanAlgo
                     }
                 }
             }
-            System.out.println("EscapePlan: " + isEscaping);
             if (isEscaping)
             {
                 direction = escapeGhosts(escapePlan);

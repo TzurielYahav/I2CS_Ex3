@@ -374,6 +374,7 @@ public class Game implements IGame
                     new RedGhost(11,11),
                     new BlueGhost(11,11),
                     new OrangeGhost(11,11),
+                    new SmartGhost(11,11),
             };
             _map.setCyclic(true);
 
@@ -715,7 +716,7 @@ public class Game implements IGame
             _status = INIT;
             if (_type == TYPE_STUPID || _type == TYPE_PINK)
                 _scatterPos = SP_TOP_LEFT;
-            else if (_type == TYPE_RED)
+            else if (_type == TYPE_RED || _type == TYPE_SMART)
                 _scatterPos = SP_TOP_RIGHT;
             else if (_type == TYPE_ORANGE || _type == TYPE_TERMINATOR)
                 _scatterPos = SP_BOTTOM_LEFT;
@@ -1051,7 +1052,7 @@ public class Game implements IGame
 
         private int followPlayer()
         {
-            if (super._delay == MOVE_DELAY)
+            if (super._delay == 1)
             {
                 ArrayList<PointInt2D> waypoints = _map.shortestPath(super._pos, _playerPos, OBSTACLE_VALUE);
 
@@ -1217,6 +1218,34 @@ public class Game implements IGame
             if (getPointPos().distance2D(_playerPos) > 8)
                 return _playerPos;
             return getScatterPos();
+        }
+    }
+
+    private class TerminatorGhost extends Ghost
+    {
+        TerminatorGhost(int x, int y)
+        {
+            super(x, y, TYPE_TERMINATOR);
+        }
+
+        @Override
+        public void move()
+        {
+            super.move();
+            if (super._status == PLAY)
+                super.moveToDirection(followPlayer());
+        }
+
+        private int followPlayer()
+        {
+            ArrayList<PointInt2D> waypoints = _map.shortestPath(super._pos, _playerPos, OBSTACLE_VALUE);
+
+            if (waypoints != null)
+            {
+                waypoints.removeFirst();
+                return super.getDirectionFromPoint(waypoints.getFirst());
+            }
+            return 0;
         }
     }
 }

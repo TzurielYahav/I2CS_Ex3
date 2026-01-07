@@ -22,6 +22,7 @@ public interface IGhost
     PointInt2D OUT_OF_GATE = new PointInt2D(11,14);
 
 
+
     String getPos();
 
     int getDirection();

@@ -4,8 +4,10 @@ import java.util.ArrayList;
 
 public class Game implements IGame
 {
-
-
+    private PointInt2D SP_TOP_LEFT;
+    private PointInt2D SP_TOP_RIGHT;
+    private PointInt2D SP_BOTTOM_LEFT;
+    private PointInt2D SP_BOTTOM_RIGHT;
     private int _gameStatus;
     private int _score;
     private long _gameStartTime;
@@ -42,11 +44,15 @@ public class Game implements IGame
         // ====== Canvas Init ======
         StdDraw.setCanvasSize(CANVAS_WIDTH, CANVAS_HEIGHT);
 
-        // ====== COLORS Init ======
+        // ====== Vars Init ======
         COLORS[FLOOR_VALUE] = StdDraw.BLACK;
         COLORS[OBSTACLE_VALUE] = StdDraw.BLUE;
         COLORS[FRUIT_VALUE] = StdDraw.PINK;
         COLORS[BIG_FRUIT_VALUE] = StdDraw.GREEN;
+        SP_TOP_LEFT = new PointInt2D(0, _map.getHeight());
+        SP_TOP_RIGHT = new PointInt2D(_map.getWidth() - 1,_map.getHeight());
+        SP_BOTTOM_LEFT = new PointInt2D(0,-1);
+        SP_BOTTOM_RIGHT = new PointInt2D(_map.getWidth() - 1,-1);
 
         // =======================================
         DrawGame();
@@ -644,6 +650,7 @@ public class Game implements IGame
     {
         private PointInt2D _pos;
         private PointInt2D _prevPos;
+        private PointInt2D _scatterPos;
         private final int _type;
         private long _lastGreen = 0;
         private int _status;
@@ -662,6 +669,14 @@ public class Game implements IGame
             _prevPos = new PointInt2D(x,y);
             _type = type;
             _status = INIT;
+            if (_type == TYPE_STUPID || _type == TYPE_PINK)
+                _scatterPos = SP_TOP_LEFT;
+            else if (_type == TYPE_RED)
+                _scatterPos = SP_TOP_RIGHT;
+            else if (_type == TYPE_ORANGE || _type == TYPE_TERMINATOR)
+                _scatterPos = SP_BOTTOM_LEFT;
+            else
+                _scatterPos = SP_BOTTOM_RIGHT;
         }
 
         Ghost(Ghost ghost)
@@ -697,6 +712,11 @@ public class Game implements IGame
         public int getStatus()
         {
             return _status;
+        }
+
+        public PointInt2D getScatterPos()
+        {
+            return _scatterPos;
         }
 
         public double remainTimeAsEatable()
@@ -758,10 +778,14 @@ public class Game implements IGame
             if (_status == FLEE)
                 moveToBase();
             else if (_status == CONFUSED)
+            {
                 if (isEatable())
                     moveConfused();
                 else
                     setActive();
+            }
+            else if (_status == SCATTER)
+                coloredGhostMove(_scatterPos);
         }
 
         private void moveToDirection(int direction)
@@ -1116,6 +1140,39 @@ public class Game implements IGame
                 return new PointInt2D(_playerPos.getX() + 4, _playerPos.getY());
             else
                 return new PointInt2D(_playerPos);
+        }
+    }
+
+    private class OrangeGhost extends Ghost
+    {
+        OrangeGhost(int x, int y)
+        {
+            super(x, y, TYPE_ORANGE);
+        }
+
+        @Override
+        public void move()
+        {
+            super.move();
+            if (getStatus() == PLAY)
+            {
+                if (getPointPos().distance2D(BASE) <= 1)
+                    super.moveToDirection(coloredGhostMove(OUT_OF_GATE));
+                else
+                    super.moveToDirection(orangeAlgo());
+            }
+        }
+
+        private int orangeAlgo()
+        {
+            return coloredGhostMove(findAimPoint());
+        }
+
+        private PointInt2D findAimPoint()
+        {
+            if (getPointPos().distance2D(_playerPos) > 8)
+                return _playerPos;
+            return getScatterPos();
         }
     }
 }

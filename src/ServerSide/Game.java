@@ -302,7 +302,7 @@ public class Game implements IGame
             _ghosts = new Ghost[] {
                     new RedGhost(11,11),
                     new SmartGhost(11,11),
-                    new RedGhost(11,11),
+                    new BlueGhost(11,11),
                     new StupidGhost(11,11),
                     new StupidGhost(11,11),
             };
@@ -970,7 +970,7 @@ public class Game implements IGame
                 if (!super._didTurn180)
                     return super.turn180();
 
-                PointInt2D aimPoint = super.findAimPoint();
+                PointInt2D aimPoint = findAimPoint();
 
                 PointInt2D target = super._pos;
                 double distToPlayer = Double.MAX_VALUE;
@@ -1020,9 +1020,12 @@ public class Game implements IGame
                 if (ghost._type == TYPE_RED)
                 {
                     distToRed = aimPoint.distance2D(ghost.getPointPos());
-                    angleToRed =
+                    angleToRed = aimPoint.angle2D(ghost.getPointPos()) + 180;
                 }
             }
+            if (distToRed > 0)
+                aimPoint = new PointInt2D((int)(distToRed * Math.sin(angleToRed)), (int)(distToRed * Math.cos(angleToRed)));
+            return aimPoint;
         }
     }
 }

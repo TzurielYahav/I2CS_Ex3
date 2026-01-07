@@ -23,8 +23,15 @@ public class PointInt2D
     public double distance2D(PointInt2D t)
     {
         if (t == null)
-            throw new NullPointerException("PointInt2D p2 is null");
+            throw new NullPointerException("PointInt2D t is null");
         return Math.sqrt(Math.pow(_x-t.getX(), 2) + Math.pow(_y-t.getY(), 2));
+    }
+
+    public double angle2D(PointInt2D t)
+    {
+        if (t == null)
+            throw new NullPointerException("PointInt2D t is null");
+        return Math.atan2(t.getY()-_y, t.getX()-_x);
     }
 
     public String toString()

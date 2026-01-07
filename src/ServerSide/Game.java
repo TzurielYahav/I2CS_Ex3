@@ -49,6 +49,7 @@ public class Game implements IGame
         COLORS[BIG_FRUIT_VALUE] = StdDraw.GREEN;
 
         // =======================================
+        DrawGame();
     }
 
     public int getStatus()
@@ -85,7 +86,6 @@ public class Game implements IGame
         _gameStatus = IGame.PLAY;
         _gameStartTime = System.currentTimeMillis();
         _lastFrameTime = System.currentTimeMillis();
-        DrawGame();
     }
 
     public void end(int status)
@@ -95,6 +95,8 @@ public class Game implements IGame
 
     public void move(int direction)
     {
+        if (_gameStatus != IGame.PLAY)
+            return;
         long currentTimeMillis = System.currentTimeMillis();
         long elapsedFrameTimeMillis = (currentTimeMillis - _lastFrameTime) / _dt;
 
@@ -120,12 +122,13 @@ public class Game implements IGame
     {
         if (_ghosts[0]._status == INIT && System.currentTimeMillis() - _gameStartTime > _ghostStartTime)
             for (Ghost ghost : _ghosts) ghost.setActive();
-
+        if (_ghosts[0]._status == INIT)
+            return;
         boolean hasEatenPlayer = false;
         for (Ghost ghost : _ghosts)
         {
             ghost.move();
-            if (ghost._pos.equals(_playerPos))
+            if (ghost._pos.equals(_playerPos) && ghost._status == PLAY)
             {
                 if (ghost.isEatable())
                 {
@@ -202,8 +205,8 @@ public class Game implements IGame
         StdDraw.clear();
         drawMap();
         drawInfo();
-//        drawGhosts();
-//        drawPlayer();
+        drawGhosts();
+        drawPlayer();
     }
 
     private void drawInfo()
@@ -261,6 +264,9 @@ public class Game implements IGame
     {
         for (Ghost ghost : _ghosts)
         {
+            if (ghost._pos.distance2D(ghost._prevPos) > 1 || ghost._pos.distance2D(ghost._prevPos) == 0)
+                System.out.println(ghost.getPrevPos() + "  |  " + ghost.getPos());
+            System.out.println(" Status " + ghost._status);
             drawCell(ghost.getPrevPos());
         }
         for (Ghost ghost : _ghosts)
@@ -308,6 +314,7 @@ public class Game implements IGame
             };
             _map.init(mapArr);
             _playerPos = new PointInt2D(11, 14);
+            _playerLastPos = new PointInt2D(11, 14);
             _playerDirection = 4;
             _ghosts = new Ghost[] {
                     new StupidGhost(11,11),
@@ -634,7 +641,7 @@ public class Game implements IGame
         private final int _type;
         private long _lastGreen = 0;
         private int _status;
-        private int _dir = 0;
+        private int _dir = 1;
         private int _delay = 0;
         private boolean _didTurn180 = false;
 
@@ -663,12 +670,12 @@ public class Game implements IGame
 
         public PointInt2D getPointPos()
         {
-            return _pos;
+            return new PointInt2D(_pos);
         }
 
         public PointInt2D getPrevPos()
         {
-            return _prevPos;
+            return new PointInt2D(_prevPos);
         }
 
         public int getDirection()
@@ -717,8 +724,11 @@ public class Game implements IGame
 
         public void setConfused()
         {
-            _status = CONFUSED;
-            _didTurn180 = false;
+            if (_status == PLAY)
+            {
+                _status = CONFUSED;
+                _didTurn180 = false;
+            }
         }
 
         public void setScatter()
@@ -753,7 +763,7 @@ public class Game implements IGame
                 if (_map.isInside(newPos) && _map.getPixel(newPos) != OBSTACLE_VALUE)
                 {
                     _dir = direction;
-                    _prevPos = _pos;
+                    _prevPos = new PointInt2D(_pos);
                     _pos = newPos;
                 }
             }
@@ -787,13 +797,7 @@ public class Game implements IGame
                 moveToDirection(getDirectionFromPoint(target));
             }
             else
-                turn180();
-//            if (_wayHome == null || _wayHome.isEmpty())
-//                _wayHome = _map.shortestPath(_pos, BASE, OBSTACLE_VALUE);
-//
-//            if (_wayHome != null && !_wayHome.isEmpty())
-//                moveToDirection(getDirectionFromPoint(_wayHome.removeFirst()));
-
+                moveToDirection(turn180());
             if (_pos.equals(BASE))
                 setActive();
         }
@@ -806,8 +810,9 @@ public class Game implements IGame
                 if (!_didTurn180)
                     moveToDirection(turn180());
 
-                PointInt2D target = _pos;
-                double distToPlayer = Double.MAX_VALUE;
+                PointInt2D target = new PointInt2D(_pos);
+                double bestOption = Double.MAX_VALUE;
+                double distToPlayer = _pos.distance2D(_playerPos);
                 PointInt2D[] directions = {
                         new PointInt2D(),
                         new PointInt2D(_pos.getX(), _pos.getY() + 1),
@@ -821,14 +826,20 @@ public class Game implements IGame
                     {
                         PointInt2D p = _map.pixelToBounds(directions[i]);
                         double rand =  Math.random();
-                        if (_map.getPixel(p) != OBSTACLE_VALUE && rand < distToPlayer)
+                        if (_map.getPixel(p) != OBSTACLE_VALUE && rand < bestOption)
                         {
-                            target = p;
-                            distToPlayer = rand;
+                            if ((distToPlayer <= 2 && p.distance2D(_playerPos) >= 2) || distToPlayer > 2)
+                            {
+                                target = p;
+                                bestOption = rand;
+                            }
                         }
                     }
                 }
-                moveToDirection(getDirectionFromPoint(target));
+                if (target.equals(_pos))
+                    moveToDirection(turn180());
+                else
+                    moveToDirection(getDirectionFromPoint(target));
             }
             _delay++;
         }
@@ -952,7 +963,7 @@ public class Game implements IGame
                 if (!super._didTurn180)
                     return super.turn180();
 
-                PointInt2D target = super._pos;
+                PointInt2D target = new PointInt2D(super._pos);
                 double distToPlayer = Double.MAX_VALUE;
                 PointInt2D[] directions = {
                         new PointInt2D(),
@@ -1005,7 +1016,7 @@ public class Game implements IGame
 
                 PointInt2D aimPoint = findAimPoint();
 
-                PointInt2D target = super._pos;
+                PointInt2D target = new PointInt2D(super._pos);
                 double distToPlayer = Double.MAX_VALUE;
                 PointInt2D[] directions = {
                         new PointInt2D(),
@@ -1044,7 +1055,7 @@ public class Game implements IGame
             else if (_playerDirection == 4)
                 aimPoint = new PointInt2D(_playerPos.getX() + 2, _playerPos.getY());
             else
-                aimPoint = _playerPos;
+                aimPoint = new PointInt2D(_playerPos);
 
             double angleToRed = 0;
             double distToRed = 0;

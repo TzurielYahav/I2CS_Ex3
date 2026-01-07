@@ -17,8 +17,7 @@ public class GameMain
 
     public static void play()
     {
-        Game game = new Game();                   //new Game(level);
-        game.init(GameInfo._DT);
+        Game game = new Game(GameInfo._DT);                   //new Game(level);
 //        game.init(GameInfo.CASE_SCENARIO, GameInfo.MY_ID, GameInfo.CYCLIC_MODE, GameInfo.RANDOM_SEED, GameInfo.RESOLUTION_NORM, GameInfo.DT, -1);
         PacmanAlgo man = new PacmanAlgo();
         while(game.getStatus()!= IGame.DONE)
@@ -27,8 +26,10 @@ public class GameMain
             _cmd = game.getKeyChar();
             if (_cmd !=null)
             {
-                if (_cmd == ' ') {
-                    game.play();}
+                if (_cmd == ' ')
+                {
+                    game.play();
+                }
                 if (_cmd == 'q') {
                     game.end(2);}
                 if (_cmd == 'm') {man.changeGameMode();}

@@ -242,6 +242,8 @@ public class Game implements IGame
         StdDraw.setPenColor(COLORS[FLOOR_VALUE]);
         StdDraw.filledRectangle(x, y, cellScale, cellScale);
 
+        System.out.println("DrawCell " + x + ", " + y);
+
         StdDraw.setPenColor(COLORS[_map.getPixel(pos)]);
         if (_map.getPixel(pos) == OBSTACLE_VALUE)
             StdDraw.filledRectangle(x, y, cellScale, cellScale);
@@ -264,9 +266,8 @@ public class Game implements IGame
     {
         for (Ghost ghost : _ghosts)
         {
-            if (ghost._pos.distance2D(ghost._prevPos) > 1 || ghost._pos.distance2D(ghost._prevPos) == 0)
-                System.out.println(ghost.getPrevPos() + "  |  " + ghost.getPos());
-            System.out.println(" Status " + ghost._status);
+            System.out.println(ghost.getPrevPos() + "  |  " + ghost.getPos());
+            System.out.println(" Status                 " + ghost._status);
             drawCell(ghost.getPrevPos());
         }
         for (Ghost ghost : _ghosts)
@@ -274,6 +275,7 @@ public class Game implements IGame
             double cellScale = X_Scale / (_map.getWidth() * 2);
             double imageScale = X_Scale / (_map.getWidth() * 1.5);
             String image;
+            System.out.println("Draw Picture:  " + ghost.getPointPos().getX() + cellScale + " , " + ghost.getPointPos().getY() + cellScale);
             if (ghost._status == IGhost.FLEE)
                 image = ghostImages[1];
             else if (ghost._status == IGhost.CONFUSED)

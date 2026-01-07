@@ -10,6 +10,8 @@ public class Game implements IGame
     private int _score;
     private long _gameStartTime;
     private long _lastFrameTime = 0;
+    private int _ghostStartTime = 3;
+    private int _ghostEndTime;
     private int _dt;
     private double Y_Scale;
     private double X_Scale;
@@ -73,8 +75,7 @@ public class Game implements IGame
     public IGhost[] getGhosts()
     {
         IGhost[] ghosts = new IGhost[_ghosts.length];
-        for (int i = 0; i < _ghosts.length; i++)
-            ghosts[i] = new Ghost(_ghosts[i]);
+        System.arraycopy(_ghosts, 0, ghosts, 0, _ghosts.length);
         return ghosts;
     }
 
@@ -106,7 +107,7 @@ public class Game implements IGame
             moveGhosts();
 
             // ========= Check victory ========
-
+            drawInfo();
         }
     }
 
@@ -114,15 +115,26 @@ public class Game implements IGame
 
     private void moveGhosts()
     {
-        boolean eatenPlayer = false;
+        if (_ghosts[0]._status == INIT && System.currentTimeMillis() - _gameStartTime > _ghostStartTime)
+            for (Ghost ghost : _ghosts) ghost.setActive();
+
+        boolean hasEatenPlayer = false;
         for (Ghost ghost : _ghosts)
         {
             ghost.move();
             if (ghost._pos.equals(_playerPos))
-                eatenPlayer = true;
+            {
+                if (ghost.isEatable())
+                {
+                    ghost.setFleeing();
+                    _score += GHOST_SCORE;
+                }
+                else
+                    hasEatenPlayer = true;
+            }
         }
         drawGhosts();
-        if (eatenPlayer)
+        if (hasEatenPlayer)
             end(0);
     }
     
@@ -165,8 +177,7 @@ public class Game implements IGame
 
     private void canEatGhosts()
     {
-        /// To do
-
+        for (Ghost ghost : _ghosts) ghost.setEatable();
     }
 
     private void checkVictory()
@@ -183,11 +194,21 @@ public class Game implements IGame
         StdDraw.setXscale(0,X_Scale);
         StdDraw.setYscale(0,Y_Scale + infoHeight);
         StdDraw.clear();
-        StdDraw.setPenColor(StdDraw.BLACK);
-        StdDraw.text(X_Scale / 2, Y_Scale + infoHeight / 2, "'WASD' for movement  |  '1-4' to switch levels  |  'Q' to stop and save");
         drawMap();
+        drawInfo();
         drawPlayer(_playerPos, _playerDirection);
         drawGhosts();
+    }
+
+    private void drawInfo()
+    {
+        double infoHeight = (double) INFO_Y_HEIGHT / (((double) CANVAS_HEIGHT - (double) INFO_Y_HEIGHT) / Y_Scale);
+        StdDraw.setPenColor(StdDraw.BLACK);
+        StdDraw.filledRectangle(X_Scale / 2, Y_Scale + infoHeight / 2, X_Scale / 2, infoHeight / 2);
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.setPenRadius(0.1);
+        StdDraw.text(X_Scale / 2, Y_Scale + infoHeight / 4, "'WASD' for movement  |  '1-4' to switch levels  |  'm' to switch to manual  |  'Q' to stop and save");
+        StdDraw.text(X_Scale / 2, Y_Scale + infoHeight * 3 / 4, "SCORE  " + _score + "  |  Eatable Time  " + _ghosts[0].remainTimeAsEatable());
     }
 
     private void drawMap()
@@ -279,10 +300,7 @@ public class Game implements IGame
             _playerPos = new PointInt2D(11, 14);
             _playerDirection = 4;
             _ghosts = new Ghost[] {
-                    new Ghost(11,11, IGhost.TYPE_SMART),
-                    new Ghost(11,11, IGhost.TYPE_SMART),
-                    new Ghost(11,11, IGhost.TYPE_SMART),
-                    new Ghost(11,11)
+                    new RedGhost(11,11),
             };
             _map.setCyclic(true);
 
@@ -293,174 +311,6 @@ public class Game implements IGame
         }
         Y_Scale = _map.getHeight();
         X_Scale = _map.getWidth();
-    }
-
-    /**
-     * ============ GHOST ============
-     */
-    private class Ghost implements IGhost
-    {
-        private PointInt2D _pos;
-        private PointInt2D _prevPos;
-        private int _type = TYPE_STUPID;
-        private long _lastGreen = 0;
-        private int _status = INIT;
-        private int _dir = 0;
-        private int _delay = 0;
-
-        Ghost(PointInt2D pos)
-        {
-            this(pos,0);
-        }
-
-        Ghost(int x, int y)
-        {
-            _pos = new PointInt2D(x, y);
-            _prevPos = new PointInt2D(x,y);
-        }
-
-        Ghost(PointInt2D pos, int type)
-        {
-            this(pos.getX(), pos.getY(), type);
-        }
-
-        Ghost(int x, int y, int type)
-        {
-            _pos = new PointInt2D(x, y);
-            _prevPos = new PointInt2D(x,y);
-            _type = type;
-            if(_type < 0 || _type > 7)
-                _type = 0;
-        }
-
-        Ghost(Ghost ghost)
-        {
-            this(ghost.getPointPos(), ghost.getType());
-        }
-
-        public String getPos()
-        {
-            return _pos.toString();
-        }
-
-        private PointInt2D getPointPos()
-        {
-            return _pos;
-        }
-
-        public PointInt2D getPrevPos()
-        {
-            return _prevPos;
-        }
-
-        public int getDirection()
-        {
-            return _dir;
-        }
-
-        public int getType()
-        {
-            return _type;
-        }
-
-        public int getStatus()
-        {
-            return _status;
-        }
-
-        public double remainTimeAsEatable()
-        {
-            double difference = (double)(System.currentTimeMillis() - _lastGreen);
-            return (EATABLE_TIMEOUT - difference) / 1000;
-        }
-        
-        private void move()
-        {
-            System.out.println("CP1");
-            int direction = 0;
-            if (_type == TYPE_STUPID)
-                direction = randomDirection();
-            else if (_type == TYPE_SMART)
-                direction = followPlayer();
-            
-            if (direction > 4 || direction < 0)
-                direction = 0;
-            if (direction != 0)
-            {
-                PointInt2D[] directions = {
-                        new PointInt2D(),
-                        new PointInt2D(_pos.getX(), _pos.getY() + 1),
-                        new PointInt2D(_pos.getX() - 1, _pos.getY()),
-                        new PointInt2D(_pos.getX(), _pos.getY() - 1),
-                        new PointInt2D(_pos.getX() + 1, _pos.getY()),
-                };
-                PointInt2D newPos = _map.pixelToBounds(directions[direction]);
-                if (_map.isInside(newPos) && _map.getPixel(newPos) != OBSTACLE_VALUE)
-                {
-                    _dir = direction;
-                    _prevPos = _pos;
-                    _pos = newPos;
-                }
-            }
-        }
-        
-        private int randomDirection()
-        {
-            return (int)(Math.random() * 4);
-        }
-        
-        private int followPlayer()
-        {
-            System.out.println("CP2");
-            if (_delay == MOVE_DELAY)
-            {
-                _delay = 0;
-                ArrayList<PointInt2D> waypoints = _map.shortestPath(_pos, _playerPos, OBSTACLE_VALUE);
-
-                if (waypoints != null)
-                {
-                    waypoints.removeFirst();
-                    return getDirection(waypoints.getFirst());
-                }
-                return 0;
-            }
-            _delay++;
-            return 0;
-        }
-
-        private int getDirection(PointInt2D dir)
-        {
-            if (dir.getX() > _pos.getX())
-            {
-                if (dir.getX() - 1 > _pos.getX())
-                    return exe.ex3.game.Game.LEFT;
-                else
-                    return exe.ex3.game.Game.RIGHT;
-            }
-            else if (dir.getX() < _pos.getX())
-            {
-                if (dir.getX() + 1 < _pos.getX())
-                    return exe.ex3.game.Game.RIGHT;
-                else
-                    return exe.ex3.game.Game.LEFT;
-            }
-            else if (dir.getY() > _pos.getY())
-            {
-                if (dir.getY() - 1 > _pos.getY())
-                    return exe.ex3.game.Game.DOWN;
-                else
-                    return exe.ex3.game.Game.UP;
-            }
-            else if (dir.getY() < _pos.getY())
-            {
-                if (dir.getY() + 1 < _pos.getY())
-                    return exe.ex3.game.Game.UP;
-                else
-                    return exe.ex3.game.Game.DOWN;
-            }
-            else
-                return 0;
-        }
     }
 
 
@@ -761,6 +611,270 @@ public class Game implements IGame
             {
                 return new PointInt2D(x, y);
             }
+        }
+    }
+
+    /**
+     * ============ GHOST ============
+     */
+    private class Ghost implements IGhost
+    {
+        private PointInt2D _pos;
+        private PointInt2D _prevPos;
+        private final int _type;
+        private long _lastGreen = 0;
+        private int _status;
+        private int _dir = 0;
+        private int _delay = 0;
+        private ArrayList<PointInt2D> _wayHome;
+
+        Ghost(PointInt2D pos, int type)
+        {
+            this(pos.getX(), pos.getY(), type);
+        }
+
+        Ghost(int x, int y, int type)
+        {
+            _pos = new PointInt2D(x, y);
+            _prevPos = new PointInt2D(x,y);
+            _type = type;
+            _status = INIT;
+        }
+
+        Ghost(Ghost ghost)
+        {
+            this(ghost.getPointPos(), ghost.getType());
+        }
+
+        public String getPos()
+        {
+            return _pos.toString();
+        }
+
+        public PointInt2D getPointPos()
+        {
+            return _pos;
+        }
+
+        public PointInt2D getPrevPos()
+        {
+            return _prevPos;
+        }
+
+        public int getDirection()
+        {
+            return _dir;
+        }
+
+        public int getType()
+        {
+            return _type;
+        }
+
+        public int getStatus()
+        {
+            return _status;
+        }
+
+        public double remainTimeAsEatable()
+        {
+            double difference = (double)(System.currentTimeMillis() - _lastGreen);
+            return (EATABLE_TIMEOUT - difference) / 1000;
+        }
+
+        public boolean isEatable()
+        {
+            return remainTimeAsEatable() > 0;
+        }
+
+        public void setEatable()
+        {
+            _lastGreen = System.currentTimeMillis();
+        }
+
+        public void setActive()
+        {
+            _status = PLAY;
+        }
+
+        public void setFleeing()
+        {
+            _status = FLEE;
+        }
+
+        public void move(){}
+
+        private void moveToDirection(int direction)
+        {
+            if (direction != 0)
+            {
+                PointInt2D[] directions = {
+                        new PointInt2D(),
+                        new PointInt2D(_pos.getX(), _pos.getY() + 1),
+                        new PointInt2D(_pos.getX() - 1, _pos.getY()),
+                        new PointInt2D(_pos.getX(), _pos.getY() - 1),
+                        new PointInt2D(_pos.getX() + 1, _pos.getY()),
+                };
+                PointInt2D newPos = _map.pixelToBounds(directions[direction]);
+                if (_map.isInside(newPos) && _map.getPixel(newPos) != OBSTACLE_VALUE)
+                {
+                    _dir = direction;
+                    _prevPos = _pos;
+                    _pos = newPos;
+                }
+            }
+        }
+
+        public void moveToBase()
+        {
+            if (_wayHome == null || _wayHome.isEmpty())
+                _wayHome = _map.shortestPath(_pos, BASE, OBSTACLE_VALUE);
+
+            if (_wayHome != null && _wayHome.isEmpty())
+                moveToDirection(getDirectionFromPoint(_wayHome.removeFirst()));
+
+            if (_pos.equals(BASE))
+                setActive();
+        }
+
+        private int getDirectionFromPoint(PointInt2D dir)
+        {
+            if (dir.getX() > _pos.getX())
+            {
+                if (dir.getX() - 1 > _pos.getX())
+                    return exe.ex3.game.Game.LEFT;
+                else
+                    return exe.ex3.game.Game.RIGHT;
+            }
+            else if (dir.getX() < _pos.getX())
+            {
+                if (dir.getX() + 1 < _pos.getX())
+                    return exe.ex3.game.Game.RIGHT;
+                else
+                    return exe.ex3.game.Game.LEFT;
+            }
+            else if (dir.getY() > _pos.getY())
+            {
+                if (dir.getY() - 1 > _pos.getY())
+                    return exe.ex3.game.Game.DOWN;
+                else
+                    return exe.ex3.game.Game.UP;
+            }
+            else if (dir.getY() < _pos.getY())
+            {
+                if (dir.getY() + 1 < _pos.getY())
+                    return exe.ex3.game.Game.UP;
+                else
+                    return exe.ex3.game.Game.DOWN;
+            }
+            else
+                return 0;
+        }
+    }
+
+    private class StupidGhost extends Ghost
+    {
+        StupidGhost(int x, int y)
+        {
+            super(x, y, TYPE_STUPID);
+        }
+
+        @Override
+        public void move()
+        {
+            if (super._status == PLAY)
+                super.moveToDirection(randomDirection());
+            else if (super._status == FLEE)
+                super.moveToBase();
+        }
+
+        private int randomDirection()
+        {
+            return (int)(Math.random() * 4);
+        }
+    }
+
+    private class SmartGhost extends Ghost
+    {
+        SmartGhost(int x, int y)
+        {
+            super(x, y, TYPE_SMART);
+        }
+
+        @Override
+        public void move()
+        {
+            if (super._status == PLAY)
+                super.moveToDirection(followPlayer());
+            else if (super._status == FLEE)
+                super.moveToBase();
+        }
+
+        private int followPlayer()
+        {
+            if (super._delay == MOVE_DELAY)
+            {
+                super._delay = 0;
+                ArrayList<PointInt2D> waypoints = _map.shortestPath(super._pos, _playerPos, OBSTACLE_VALUE);
+
+                if (waypoints != null)
+                {
+                    waypoints.removeFirst();
+                    return super.getDirectionFromPoint(waypoints.getFirst());
+                }
+                return 0;
+            }
+            super._delay++;
+            return 0;
+        }
+    }
+
+    private class RedGhost extends Ghost
+    {
+        RedGhost(int x, int y)
+        {
+            super(x, y, TYPE_RED);
+        }
+
+        @Override
+        public void move()
+        {
+            if (super._status == PLAY)
+                super.moveToDirection(redAlgo());
+            else if (super._status == FLEE)
+                super.moveToBase();
+        }
+
+        private int redAlgo()
+        {
+            if (super._delay == MOVE_DELAY)
+            {
+                super._delay = 0;
+                PointInt2D target = super._pos;
+                double distToPlayer = Double.MAX_VALUE;
+                PointInt2D[] directions = {
+                        new PointInt2D(),
+                        new PointInt2D(super._pos.getX(), super._pos.getY() + 1),
+                        new PointInt2D(super._pos.getX() - 1, super._pos.getY()),
+                        new PointInt2D(super._pos.getX(), super._pos.getY() - 1),
+                        new PointInt2D(super._pos.getX() + 1, super._pos.getY()),
+                };
+                for (int i = 1; i < 5; i++)
+                {
+                    if (i % 4 != (super._dir + 2) % 4)
+                    {
+                        PointInt2D p = _map.pixelToBounds(directions[i]);
+                        if (_map.getPixel(p) != OBSTACLE_VALUE && p.distance2D(_playerPos) < distToPlayer)
+                        {
+                            target = p;
+                            distToPlayer = p.distance2D(_playerPos);
+                        }
+                    }
+                }
+                return super.getDirectionFromPoint(target);
+            }
+            super._delay++;
+            return 0;
         }
     }
 }

@@ -256,6 +256,7 @@ public class PacmanAlgo
         int direction = 0;
         if(isChasing)
             direction = chaseGhost();
+        System.out.println("is chasing? " + isChasing);
         if (direction == 0)
         {
             chaseFruit(isChasing);
@@ -277,6 +278,7 @@ public class PacmanAlgo
                     }
                 }
             }
+            System.out.println("EscapePlan: " + isEscaping);
             if (isEscaping)
             {
                 direction = escapeGhosts(escapePlan);

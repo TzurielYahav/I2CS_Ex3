@@ -6,6 +6,8 @@ public interface IGhost
     int PLAY = 1;
     int PAUSE = 2;
     int FLEE = 3;
+    int CONFUSED = 4;
+    int SCATTER = 5;
     double EATABLE_TIMEOUT = 6000;
     int MOVE_DELAY = 2;
     int TYPE_STUPID = 0;

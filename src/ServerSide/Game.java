@@ -12,8 +12,9 @@ public class Game implements IGame
     private int _score;
     private long _gameStartTime;
     private long _lastFrameTime = 0;
-    private int _ghostStartTime = 1000;
-    private int _ghostEndTime;
+    private final int _ghostStartScatterTime = 20000;
+    private final int _ghostEndScatterTime = 5000;
+    private int _ghostScatterCounter = 0;
     private int _dt;
     private double Y_Scale;
     private double X_Scale;
@@ -130,6 +131,7 @@ public class Game implements IGame
 
     private void moveGhosts()
     {
+        int _ghostStartTime = 1000;
         if (_ghosts[0]._status == INIT && System.currentTimeMillis() - _gameStartTime > _ghostStartTime)
             for (Ghost ghost : _ghosts) ghost.setActive();
         if (_ghosts[0]._status == INIT)

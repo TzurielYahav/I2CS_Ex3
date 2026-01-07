@@ -12,8 +12,8 @@ public class Game implements IGame
     private int _score;
     private long _gameStartTime;
     private long _lastFrameTime = 0;
-    private final int _ghostStartScatterTime = 15000;
-    private final int _ghostEndScatterTime = 5000;
+    private final int _ghostStartScatterTime = 20000;
+    private final int _ghostEndScatterTime = 4000;
     private long _ghostScatterCounter = 0;
     private int _dt;
     private double Y_Scale;
@@ -22,6 +22,7 @@ public class Game implements IGame
     private PointInt2D _playerPos;
     private PointInt2D _playerLastPos;
     private int _playerDirection;
+    private int _playerDelayCount = 0;
     private Ghost[] _ghosts;
 
 
@@ -37,23 +38,19 @@ public class Game implements IGame
 
     public void init(int dt)
     {
+        // ====== Vars Init ======
         _gameStatus = INIT;
         _dt = dt;
         _map = new GameMap();
-        createLevel(1);
-
-        // ====== Canvas Init ======
-        StdDraw.setCanvasSize(CANVAS_WIDTH, CANVAS_HEIGHT);
-
-        // ====== Vars Init ======
         COLORS[FLOOR_VALUE] = StdDraw.BLACK;
         COLORS[OBSTACLE_VALUE] = StdDraw.BLUE;
         COLORS[FRUIT_VALUE] = StdDraw.PINK;
         COLORS[BIG_FRUIT_VALUE] = StdDraw.GREEN;
-        SP_TOP_LEFT = new PointInt2D(0, _map.getHeight());
-        SP_TOP_RIGHT = new PointInt2D(_map.getWidth() - 1,_map.getHeight());
-        SP_BOTTOM_LEFT = new PointInt2D(0,-1);
-        SP_BOTTOM_RIGHT = new PointInt2D(_map.getWidth() - 1,-1);
+
+        createLevel(1);
+
+        // ====== Canvas Init ======
+        StdDraw.setCanvasSize(CANVAS_WIDTH, CANVAS_HEIGHT);
 
         // =======================================
         DrawGame();
@@ -111,14 +108,16 @@ public class Game implements IGame
         if (elapsedFrameTimeMillis > 1)
         {
             _lastFrameTime = currentTimeMillis;
-            // ========= Player ========
-            movePlayer(direction);
-
             // ========= Ghost ========
-            Ghost.addDelayCount();
             moveGhosts();
             if (Ghost._delay == IGhost.MOVE_DELAY)
                 Ghost.resetDelay();
+            else
+                Ghost.addDelayCount();
+
+            // ========= Player ========
+            movePlayer(direction);
+
 
 
             // ========= Check victory ========
@@ -137,6 +136,7 @@ public class Game implements IGame
             for (Ghost ghost : _ghosts) ghost.setActive();
         if (_ghosts[0]._status == INIT)
             return;
+        ghostCheckScatter();
         boolean hasEatenPlayer = false;
         for (Ghost ghost : _ghosts)
         {
@@ -161,6 +161,13 @@ public class Game implements IGame
     
     private void movePlayer(int direction)
     {
+        if (_playerDelayCount != PLAYER_MOVE_DELAY)
+        {
+            _playerDelayCount++;
+            return;
+        }
+        else
+            _playerDelayCount = 0;
         if (direction > 4 || direction < 0)
             direction = 0;
         if (direction != 0)
@@ -260,7 +267,8 @@ public class Game implements IGame
         StdDraw.filledRectangle(X_Scale / 2, Y_Scale + infoHeight / 2, X_Scale / 2, infoHeight / 2);
         StdDraw.setPenColor(StdDraw.WHITE);
         StdDraw.setPenRadius(0.1);
-        StdDraw.text(X_Scale / 2, Y_Scale + infoHeight / 4, "'WASD' for movement  |  '1-4' to switch levels  |  'm' to switch to manual  |  'Q' to stop and save");
+//        StdDraw.text(X_Scale / 2, Y_Scale + infoHeight / 4, "'WASD' for movement  |  '1-4' to switch levels  |  'm' to switch to manual  |  'Q' to stop and save");
+        StdDraw.text(X_Scale / 2, Y_Scale + infoHeight / 4, "Pink  " + _ghosts[0]._status + "  |  Red  " + _ghosts[1]._status + "  |  Blue  " + _ghosts[2]._status + "  |  Orange  " + _ghosts[3]._status);
         StdDraw.text(X_Scale / 2, Y_Scale + infoHeight * 3 / 4, "SCORE  " + _score + "  |  Eatable Time  " + _ghosts[0].remainTimeAsEatable());
     }
 
@@ -354,6 +362,10 @@ public class Game implements IGame
                     { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
             };
             _map.init(mapArr);
+            SP_TOP_LEFT = new PointInt2D(0, _map.getHeight());
+            SP_TOP_RIGHT = new PointInt2D(_map.getWidth() - 1,_map.getHeight());
+            SP_BOTTOM_LEFT = new PointInt2D(0,-1);
+            SP_BOTTOM_RIGHT = new PointInt2D(_map.getWidth() - 1,-1);
             _playerPos = new PointInt2D(11, 14);
             _playerLastPos = new PointInt2D(11, 14);
             _playerDirection = 4;
@@ -361,6 +373,7 @@ public class Game implements IGame
                     new PinkGhost(11,11),
                     new RedGhost(11,11),
                     new BlueGhost(11,11),
+                    new OrangeGhost(11,11),
             };
             _map.setCyclic(true);
 
@@ -816,7 +829,12 @@ public class Game implements IGame
                     setActive();
             }
             else if (_status == SCATTER)
-                coloredGhostMove(_scatterPos);
+            {
+                if (getPointPos().distance2D(BASE) <= 1)
+                    moveToDirection(coloredGhostMove(OUT_OF_GATE));
+                else
+                    moveToDirection(coloredGhostMove(_scatterPos));
+            }
         }
 
         private void moveToDirection(int direction)
@@ -992,11 +1010,6 @@ public class Game implements IGame
             if (dir == 0)
                 dir = 4;
             return dir;
-        }
-
-        private int randomDirection()
-        {
-            return (int)(Math.random() * 3) + 1;
         }
     }
 

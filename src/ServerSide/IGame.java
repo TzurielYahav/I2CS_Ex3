@@ -52,6 +52,7 @@ public interface IGame
     int FRUIT_VALUE = 2;
     int BIG_FRUIT_VALUE = 3;
     Color[] COLORS = new Color[4];
+    int PLAYER_MOVE_DELAY = 0;
     int FRUIT_SCORE = 10;
     int BIG_FRUIT_SCORE = 50;
     int GHOST_SCORE = 200;

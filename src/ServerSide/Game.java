@@ -12,9 +12,9 @@ public class Game implements IGame
     private int _score;
     private long _gameStartTime;
     private long _lastFrameTime = 0;
-    private final int _ghostStartScatterTime = 20000;
+    private final int _ghostStartScatterTime = 15000;
     private final int _ghostEndScatterTime = 5000;
-    private int _ghostScatterCounter = 0;
+    private long _ghostScatterCounter = 0;
     private int _dt;
     private double Y_Scale;
     private double X_Scale;
@@ -93,6 +93,7 @@ public class Game implements IGame
         _gameStatus = IGame.PLAY;
         _gameStartTime = System.currentTimeMillis();
         _lastFrameTime = System.currentTimeMillis();
+        ghostSetScatter();
     }
 
     public void end(int status)
@@ -209,6 +210,34 @@ public class Game implements IGame
         if (!_map.hasColors(new int[] {FRUIT_VALUE, BIG_FRUIT_VALUE}))
         {
             end(1);
+        }
+    }
+
+    private void ghostSetScatter()
+    {
+        _ghostScatterCounter = System.currentTimeMillis();
+        for (Ghost ghost : _ghosts)
+            ghost.setScatter();
+    }
+
+    private void ghostSetActive()
+    {
+        _ghostScatterCounter = System.currentTimeMillis();
+        for (Ghost ghost : _ghosts)
+            ghost.setActive();
+    }
+
+    private void ghostCheckScatter()
+    {
+        if (_ghosts[0]._status == IGhost.SCATTER)
+        {
+            if (System.currentTimeMillis() > _ghostScatterCounter + _ghostEndScatterTime)
+                ghostSetActive();
+        }
+        else
+        {
+            if (System.currentTimeMillis() > _ghostScatterCounter + _ghostStartScatterTime)
+                ghostSetScatter();
         }
     }
 

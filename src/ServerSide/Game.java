@@ -17,6 +17,7 @@ public class Game implements IGame
     private double X_Scale;
     private GameMap _map;
     private PointInt2D _playerPos;
+    private PointInt2D _playerLastPos;
     private int _playerDirection;
     private Ghost[] _ghosts;
 
@@ -107,6 +108,8 @@ public class Game implements IGame
             moveGhosts();
 
             // ========= Check victory ========
+            drawGhosts();
+            drawPlayer();
             drawInfo();
         }
     }
@@ -133,7 +136,6 @@ public class Game implements IGame
                     hasEatenPlayer = true;
             }
         }
-        drawGhosts();
         if (hasEatenPlayer)
             end(0);
     }
@@ -152,8 +154,12 @@ public class Game implements IGame
                     new PointInt2D(_playerPos.getX() + 1, _playerPos.getY()),
             };
             PointInt2D newPos = _map.pixelToBounds(directions[direction]);
-            if (_map.isInside(newPos))
-                drawPlayer(_map.pixelToBounds(newPos), direction);
+            if (_map.isInside(newPos) && _map.isInside(newPos))
+            {
+                _playerLastPos = new PointInt2D(_playerPos);
+                _playerPos = newPos;
+                _playerDirection = direction;
+            }
         }
         hasEatenFruit();
     }
@@ -196,8 +202,8 @@ public class Game implements IGame
         StdDraw.clear();
         drawMap();
         drawInfo();
-        drawPlayer(_playerPos, _playerDirection);
         drawGhosts();
+        drawPlayer();
     }
 
     private void drawInfo()
@@ -242,16 +248,13 @@ public class Game implements IGame
             StdDraw.filledCircle(x, y, bigFruitScale);
     }
 
-    private void drawPlayer(PointInt2D pos, int direction)
+    private void drawPlayer()
     {
         double cellScale = X_Scale / (_map.getWidth() * 2);
         double imageScale = X_Scale / (_map.getWidth() * 1.5);
 
-        drawCell(new PointInt2D(_playerPos.getX(), _playerPos.getY()));
-        if (_map.getPixel(pos) != OBSTACLE_VALUE)
-            _playerPos = pos;
-
-        StdDraw.picture(_playerPos.getX() + cellScale, _playerPos.getY() + cellScale, PLAYER_IMG, imageScale, imageScale, direction * 90);
+        drawCell(new PointInt2D(_playerLastPos.getX(), _playerLastPos.getY()));
+        StdDraw.picture(_playerPos.getX() + cellScale, _playerPos.getY() + cellScale, PLAYER_IMG, imageScale, imageScale, _playerDirection * 90);
     }
 
     private void drawGhosts()
@@ -264,7 +267,14 @@ public class Game implements IGame
         {
             double cellScale = X_Scale / (_map.getWidth() * 2);
             double imageScale = X_Scale / (_map.getWidth() * 1.5);
-            StdDraw.picture(ghost.getPointPos().getX() + cellScale, ghost.getPointPos().getY() + cellScale, images[ghost.getType()], imageScale, imageScale, ghost.getDirection() * 90);
+            String image;
+            if (ghost._status == IGhost.FLEE)
+                image = ghostImages[1];
+            else if (ghost._status == IGhost.CONFUSED)
+                image = ghostImages[0];
+            else
+                image = ghostImages[(ghost._type + 2) + ((Math.max(0,ghost._dir - 1)) * IGhost.AMOUNT_OF_TYPES)];
+            StdDraw.picture(ghost.getPointPos().getX() + cellScale, ghost.getPointPos().getY() + cellScale, image, imageScale, imageScale);
         }
     }
 
@@ -300,10 +310,6 @@ public class Game implements IGame
             _playerPos = new PointInt2D(11, 14);
             _playerDirection = 4;
             _ghosts = new Ghost[] {
-                    new RedGhost(11,11),
-                    new SmartGhost(11,11),
-                    new BlueGhost(11,11),
-                    new StupidGhost(11,11),
                     new StupidGhost(11,11),
             };
             _map.setCyclic(true);
@@ -792,12 +798,39 @@ public class Game implements IGame
                 setActive();
         }
 
-        private void moveConfused()
+        public void moveConfused()
         {
-            if (_didTurn180)
-                moveToDirection(randomDirection());
-            else
-                turn180();
+            if (_delay == MOVE_DELAY)
+            {
+                _delay = 0;
+                if (!_didTurn180)
+                    moveToDirection(turn180());
+
+                PointInt2D target = _pos;
+                double distToPlayer = Double.MAX_VALUE;
+                PointInt2D[] directions = {
+                        new PointInt2D(),
+                        new PointInt2D(_pos.getX(), _pos.getY() + 1),
+                        new PointInt2D(_pos.getX() - 1, _pos.getY()),
+                        new PointInt2D(_pos.getX(), _pos.getY() - 1),
+                        new PointInt2D(_pos.getX() + 1, _pos.getY()),
+                };
+                for (int i = 1; i < 5; i++)
+                {
+                    if (i % 4 != (_dir + 2) % 4)
+                    {
+                        PointInt2D p = _map.pixelToBounds(directions[i]);
+                        double rand =  Math.random();
+                        if (_map.getPixel(p) != OBSTACLE_VALUE && rand < distToPlayer)
+                        {
+                            target = p;
+                            distToPlayer = rand;
+                        }
+                    }
+                }
+                moveToDirection(getDirectionFromPoint(target));
+            }
+            _delay++;
         }
 
         private int getDirectionFromPoint(PointInt2D dir)
@@ -858,7 +891,7 @@ public class Game implements IGame
         {
             super.move();
             if (super._status == PLAY)
-                super.moveToDirection(super.randomDirection());
+                moveConfused();
         }
     }
 

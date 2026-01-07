@@ -12,11 +12,12 @@ public interface IGhost
     int MOVE_DELAY = 2;
     int TYPE_STUPID = 0;
     int TYPE_RED = 1;
-    int TYPE_GREEN = 2;
+    int TYPE_PINK = 2;
     int TYPE_BLUE = 3;
     int TYPE_ORANGE = 4;
     int TYPE_SMART = 5;
     int TYPE_TERMINATOR = 6;
+    int AMOUNT_OF_TYPES = 7;
     PointInt2D BASE = new PointInt2D(11,11);
 
 

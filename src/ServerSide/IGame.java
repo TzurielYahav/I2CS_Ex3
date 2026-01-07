@@ -15,14 +15,37 @@ public interface IGame
     int DOWN = 3;
     int RIGHT = 4;
     String PLAYER_IMG = "player.png";
-    String[] images = {
-            "RedRight.png",
+    String[] ghostImages = {
+            "ConfusedGhost.png",
+            "FleeingGhost.png",
+            "GreenUp.png",
             "RedUp.png",
+            "PinkUp.png",
+            "BlueUp.png",
+            "OrangeUp.png",
+            "PurpleUp.png",
+            "TerminatorUp.png",
+            "GreenLeft.png",
             "RedLeft.png",
+            "PinkLeft.png",
+            "BlueLeft.png",
+            "OrangeLeft.png",
+            "PurpleLeft.png",
+            "TerminatorLeft.png",
+            "GreenDown.png",
             "RedDown.png",
+            "PinkDown.png",
+            "BlueDown.png",
+            "OrangeDown.png",
+            "PurpleDown.png",
+            "TerminatorDown.png",
+            "GreenRight.png",
             "RedRight.png",
-            "RedRight.png",
-            "RedRight.png",
+            "PinkRight.png",
+            "BlueRight.png",
+            "OrangeRight.png",
+            "PurpleRight.png",
+            "TerminatorRight.png",
     };
     int FLOOR_VALUE = 0;
     int OBSTACLE_VALUE = 1;

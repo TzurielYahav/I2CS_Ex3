@@ -21,7 +21,7 @@ package ServerSide;//package stdDraw;
  *  Remarks
  *  -------
  *    -  don't use AffineTransform for rescaling since it inverts
- *       images and strings
+ *       ghostImages and strings
  *
  ******************************************************************************/
 
@@ -257,7 +257,7 @@ import java.util.TreeSet;
  *  </pre>
  *  <p>
  *  <b>Images.</b>
- *  You can use the following methods to add images to your drawings:
+ *  You can use the following methods to add ghostImages to your drawings:
  *  <ul>
  *  <li> {@link #picture(double x, double y, String filename)}
  *  <li> {@link #picture(double x, double y, String filename, double degrees)}
@@ -1227,7 +1227,7 @@ public final class StdDraw implements ActionListener, MouseListener, MouseMotion
 
 
 	/***************************************************************************
-	 *  Drawing images.
+	 *  Drawing ghostImages.
 	 ***************************************************************************/
 	// get an image from the given filename
 	private static Image getImage(String filename) {
@@ -1266,7 +1266,7 @@ public final class StdDraw implements ActionListener, MouseListener, MouseMotion
 
 	/***************************************************************************
 	 * [Summer 2016] Should we update to use ImageIO instead of ImageIcon()?
-	 *               Seems to have some issues loading images on some systems
+	 *               Seems to have some issues loading ghostImages on some systems
 	 *               and slows things down on other systems.
 	 *               especially if you don't call ImageIO.setUseCache(false)
 	 *               One advantage is that it returns a BufferedImage.

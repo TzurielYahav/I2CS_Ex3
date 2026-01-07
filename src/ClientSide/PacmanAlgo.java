@@ -334,7 +334,7 @@ public class PacmanAlgo
         for (int i = 0; i < _ghosts.length; i++)
         {
             double newClosestDistance = pixelFromString(_ghosts[i].getPos()).distance2D(_pos);
-            if (closestDistance > newClosestDistance && newClosestDistance < CHASE_DISTANCE && notInCenter(getGhostPos(i)))
+            if (_ghosts[i].getStatus() != IGhost.FLEE && closestDistance > newClosestDistance && newClosestDistance < CHASE_DISTANCE && notInCenter(getGhostPos(i)))
             {
                 closestDistance = newClosestDistance;
                 closestGhost = i;

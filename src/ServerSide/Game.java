@@ -730,7 +730,7 @@ public class Game implements IGame
 
         public void setConfused()
         {
-            if (_status == PLAY)
+            if (_status == PLAY || _status == INIT)
             {
                 _status = CONFUSED;
                 _didTurn180 = false;

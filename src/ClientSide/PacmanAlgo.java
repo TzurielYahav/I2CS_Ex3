@@ -7,7 +7,6 @@ import java.util.ArrayList;
 
 public class PacmanAlgo
 {
-    private boolean _manual = true;
     private final ArrayList<Pixel2D> _waypoints;
     private Pixel2D _pos;
     private Map _map;
@@ -33,27 +32,7 @@ public class PacmanAlgo
         return autoMove(game);
     }
 
-    public void changeGameMode()
-    {
-        _manual = !_manual;
-    }
-
     /// ======== private functions ========
-
-//    private int manualMove()
-//    {
-////        int ans = Game.ERR;
-////        int cmd = GameMain.getCMD();
-////
-////        if (cmd != null) {
-////            System.out.println("Algo CMD " + cmd.toString());
-////            if (cmd == 'w') {ans = Game.UP;}
-////            if (cmd == 's') {ans = Game.DOWN;}
-////            if (cmd == 'a') {ans = Game.LEFT;}
-////            if (cmd == 'd') {ans = Game.RIGHT;}
-////        }
-//        return GameMain.getCMD();
-//    }
 
     private int autoMove(Game game)
     {

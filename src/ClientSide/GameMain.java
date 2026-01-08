@@ -12,8 +12,6 @@ import java.util.ArrayList;
 
 public class GameMain
 {
-    private static int _cmd;
-
     static void main(String[] args) {
         play();
     }
@@ -22,14 +20,5 @@ public class GameMain
     {
         Game game = new Game(GameInfo._DT);
         game.startGame();   //new Game(level);
-//        game.init(GameInfo.CASE_SCENARIO, GameInfo.MY_ID, GameInfo.CYCLIC_MODE, GameInfo.RANDOM_SEED, GameInfo.RESOLUTION_NORM, GameInfo.DT, -1);
-
-    }
-
-    public static int getCMD()
-    {
-        int cmd = _cmd;
-        _cmd = 0;
-        return cmd;
     }
 }

@@ -142,7 +142,7 @@ public class Game implements IGame
             if (!getManualMode())
                 move(man.move(this));
             move(0);
-            StdDraw.pause(50);
+            StdDraw.pause(_dt / 4);
         }
     }
 
@@ -203,30 +203,6 @@ public class Game implements IGame
         }
 
         // ========= Check victory ========
-
-//        long currentTime = System.currentTimeMillis();
-//        long elapsedTime = currentTime - _lastFrameTime;
-//        _lastFrameTime = currentTime;
-//        _lag += elapsedTime;
-//
-//        while (_lag >= _dt)
-//        {
-//            _lag -= _dt;
-//            // ========= Player ========
-//            movePlayer(direction);
-//
-//            // ========= Ghost ========
-//            moveGhosts();
-//            if (Ghost._delay == IGhost.MOVE_DELAY)
-//                Ghost.resetDelay();
-//            else
-//                Ghost.addDelayCount();
-//
-//            drawUpdate();
-//            checkEatenByGhosts();
-//
-//            // ========= Check victory ========
-//        }
     }
 
     /// ============== private functions ==============

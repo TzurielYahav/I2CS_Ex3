@@ -186,9 +186,13 @@ public class Game implements IGame
         while(_gameStatus != IGame.DONE)
         {
             processInput();
+            int playerDir = 0;
+            if (_gameStatus == IGame.PLAY)
+                playerDir = man.move(this);
             if (!getManualMode())
-                move(man.move(this));
-            move(0);
+                move(playerDir);
+            else
+                move(0);
             StdDraw.pause(_dt / 4);
         }
     }

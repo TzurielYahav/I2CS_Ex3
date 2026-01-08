@@ -109,7 +109,7 @@ public class Game implements IGame
         try
         {
             FileWriter myWriter = new FileWriter(saveFileName);
-            myWriter.write(_highScore);
+            myWriter.write(Integer.toString(_highScore));
             myWriter.close();
         }
         catch(Exception e)
@@ -263,8 +263,10 @@ public class Game implements IGame
                 direction = _manualCMD;
                 _manualCMD = 0;
             }
+            drawInfo();
             movePlayer(direction);
-
+            drawPlayer();
+            checkCollisionByGhosts();
             // ========= Ghost ========
             moveGhosts();
             if (Ghost._delay == IGhost.MOVE_DELAY)
@@ -272,8 +274,8 @@ public class Game implements IGame
             else
                 Ghost.addDelayCount();
 
-            drawUpdate();
-            checkEatenByGhosts();
+            drawGhosts();
+            checkCollisionByGhosts();
         }
 
         // ========= Check victory ========
@@ -295,7 +297,7 @@ public class Game implements IGame
         }
     }
 
-    private void checkEatenByGhosts()
+    private void checkCollisionByGhosts()
     {
         for (Ghost ghost : _ghosts)
         {
@@ -306,7 +308,26 @@ public class Game implements IGame
                     if (ghost._status != IGhost.FLEE)
                     {
                         ghost.setFleeing();
-                        _score += GHOST_SCORE;
+                        if (ghost._type == IGhost.TYPE_STUPID)
+                        {
+                            _score += STUPID_GHOST_SCORE;
+                            drawScore(ghost._pos, STUPID_GHOST_SCORE);
+                        }
+                        else if (ghost._type == IGhost.TYPE_RED || ghost._type == IGhost.TYPE_ORANGE || ghost._type == IGhost.TYPE_PINK || ghost._type == IGhost.TYPE_BLUE)
+                        {
+                            _score += GHOST_SCORE;
+                            drawScore(ghost._pos, GHOST_SCORE);
+                        }
+                        else if (ghost._type == IGhost.TYPE_SMART)
+                        {
+                            _score += SMART_GHOST_SCORE;
+                            drawScore(ghost._pos, SMART_GHOST_SCORE);
+                        }
+                        else if (ghost._type == IGhost.TYPE_TERMINATOR)
+                        {
+                            _score += TERMINATOR_GHOST_SCORE;
+                            drawScore(ghost._pos, TERMINATOR_GHOST_SCORE);
+                        }
                     }
                 }
                 else
@@ -416,6 +437,7 @@ public class Game implements IGame
 
     private void drawInfo()
     {
+        System.out.println(_ghosts[0].remainTimeAsEatable());
         double infoHeight = (double) INFO_Y_HEIGHT / (((double) CANVAS_HEIGHT - (double) INFO_Y_HEIGHT) / Y_Scale);
         StdDraw.setPenColor(StdDraw.BLACK);
         StdDraw.filledRectangle(X_Scale / 2, Y_Scale + infoHeight / 2, X_Scale / 2, infoHeight / 2);
@@ -435,6 +457,17 @@ public class Game implements IGame
                 drawCell(new PointInt2D(x, y));
             }
         }
+    }
+
+    private void drawScore(PointInt2D pos, int score)
+    {
+        double cellScale = X_Scale / (_map.getWidth() * 2);
+        double x = pos.getX() + cellScale;
+        double y = pos.getY() + cellScale;
+
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.setFont(new Font("Arial", Font.PLAIN, 12));
+        StdDraw.text(x, y, String.valueOf(score));
     }
 
     private void drawCell(PointInt2D pos)
@@ -460,18 +493,20 @@ public class Game implements IGame
     private void drawUpdate()
     {
         drawInfo();
-        drawCell(new PointInt2D(_playerLastPos.getX(), _playerLastPos.getY()));
+        drawPlayer();
+        drawGhosts();
+    }
+
+    private void drawGhosts()
+    {
         for (Ghost ghost : _ghosts)
         {
             drawCell(ghost.getPrevPos());
         }
-        double cellScale = X_Scale / (_map.getWidth() * 2);
-        double imageScale = X_Scale / (_map.getWidth() * 1.5);
-        StdDraw.picture(_playerPos.getX() + cellScale, _playerPos.getY() + cellScale, PLAYER_IMG, imageScale, imageScale, _playerDirection * 90);
         for (Ghost ghost : _ghosts)
         {
-            cellScale = X_Scale / (_map.getWidth() * 2);
-            imageScale = X_Scale / (_map.getWidth() * 1.5);
+            double cellScale = X_Scale / (_map.getWidth() * 2);
+            double imageScale = X_Scale / (_map.getWidth() * 1.5);
             String image;
             if (ghost._status == IGhost.FLEE)
                 image = ghostImages[1];
@@ -481,6 +516,14 @@ public class Game implements IGame
                 image = ghostImages[(ghost._type + 2) + ((Math.max(0,ghost._dir - 1)) * IGhost.AMOUNT_OF_TYPES)];
             StdDraw.picture(ghost.getPointPos().getX() + cellScale, ghost.getPointPos().getY() + cellScale, image, imageScale, imageScale);
         }
+    }
+
+    private void drawPlayer()
+    {
+        drawCell(new PointInt2D(_playerLastPos.getX(), _playerLastPos.getY()));
+        double cellScale = X_Scale / (_map.getWidth() * 2);
+        double imageScale = X_Scale / (_map.getWidth() * 1.5);
+        StdDraw.picture(_playerPos.getX() + cellScale, _playerPos.getY() + cellScale, PLAYER_IMG, imageScale, imageScale, _playerDirection * 90);
     }
 
     private void drawMenu()

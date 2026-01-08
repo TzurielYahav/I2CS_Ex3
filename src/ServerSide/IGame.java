@@ -61,7 +61,10 @@ public interface IGame
     int GHOST_END_SCATTER_TIME = 4000;
     int FRUIT_SCORE = 10;
     int BIG_FRUIT_SCORE = 50;
-    int GHOST_SCORE = 200;
+    int STUPID_GHOST_SCORE = 200;
+    int GHOST_SCORE = 400;
+    int SMART_GHOST_SCORE = 600;
+    int TERMINATOR_GHOST_SCORE = 1000;
     int INFO_Y_HEIGHT = 50;
     int CANVAS_WIDTH = 800;
     int CANVAS_HEIGHT = CANVAS_WIDTH + INFO_Y_HEIGHT;

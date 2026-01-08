@@ -20,7 +20,7 @@ public class Game implements IGame
     private int _gameStatus;
     private int _score;
     private int _highScore = 0;
-    private int _level = 1;
+    private int _level = 0;
     private long _gameStartTime;
     private long _lastFrameTime = 0;
     private long _ghostScatterCounter = 0;
@@ -158,7 +158,7 @@ public class Game implements IGame
                 System.out.println("Pacman help: keys: ' '-start, 'w,a,s,d'-directions, all other parameters should be configured via GameInfo.java, ");
             if (character >= '1' && character <= '9')
             {
-                changeLevel(Character.getNumericValue(character));
+                changeLevel(Character.getNumericValue(character) - 1);
                 return;
             }
             if (character == 'w') {_manualCMD = Game.UP;}
@@ -189,7 +189,7 @@ public class Game implements IGame
                 move(man.move(this));
             else
                 move(0);
-            StdDraw.pause(_dt / 4);
+//            StdDraw.pause(_dt / 4);
         }
     }
 
@@ -440,7 +440,7 @@ public class Game implements IGame
         StdDraw.setFont(new Font("Arial Rounded MT Bold", Font.BOLD, 12));
         StdDraw.text(X_Scale / 2, Y_Scale + infoHeight * 3 / 4, "'WASD' for movement  |  '1 - 9' to switch levels  |  'm' for Auto Mode  |  'P' to Pause  |  'Q' to exit and save");
         StdDraw.setFont(new Font("Bauhaus 93", Font.BOLD, 20));
-        StdDraw.text(X_Scale / 2, Y_Scale + infoHeight / 4, "SCORE  " + _score + "  |  Ghosts Eatable Time  " + (_ghosts[0].remainTimeAsEatable() > 0 ? _ghosts[0].remainTimeAsEatable() : 0));
+        StdDraw.text(X_Scale / 2, Y_Scale + infoHeight / 4, "Level " + (_level / 3 + 1) + "  Difficulty " + (_level % 3 + 1) + "  |  SCORE  " + _score + "  |  Ghosts Eatable Time  " + (_ghosts[0].remainTimeAsEatable() > 0 ? _ghosts[0].remainTimeAsEatable() : 0));
     }
 
     private void drawMap()
@@ -540,10 +540,10 @@ public class Game implements IGame
 
     public void changeLevel(int level)
     {
-        if (level < 1)
-            _level = 1;
-        else if (_level > 9)
-            _level = 9;
+        if (level < 0)
+            _level = 0;
+        else if (_level > 8)
+            _level = 8;
         else
             _level = level;
         _gameStatus = INIT;
@@ -556,7 +556,7 @@ public class Game implements IGame
 
     private void createLevel()
     {
-        if (_level == 1 || _level == 2 || _level == 3)
+        if (_level == 0 || _level == 1 || _level == 2)
         {
             int[][] mapArr = {
                     { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
@@ -595,7 +595,7 @@ public class Game implements IGame
             _map.setCyclic(true);
 
         }
-        else if (_level == 4 || _level == 5 || _level == 6)
+        else if (_level == 3 || _level == 4 || _level == 5)
         {
             int[][] mapArr = new int[][]{
                     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -635,7 +635,7 @@ public class Game implements IGame
             _playerDirection = 4;
             _map.setCyclic(true);
         }
-        else if (_level == 7 || _level == 8 || _level == 9)
+        else if (_level == 6 || _level == 7 || _level == 8)
         {
             int[][] mapArr = new int[][]{
                     {2, 2, 2, 1, 2, 1, 2, 2, 2, 1, 2, 1, 2, 1, 2, 2, 2, 1, 2, 1, 2, 2, 2},
@@ -675,7 +675,7 @@ public class Game implements IGame
             _map.setCyclic(true);
         }
 
-        if (_level == 1 || _level == 4 || _level == 7)
+        if (_level == 0 || _level == 3 || _level == 6)
         {
             _ghosts = new Ghost[] {
                     new StupidGhost(SP_CENTER),
@@ -685,7 +685,7 @@ public class Game implements IGame
                     new RedGhost(SP_CENTER),
             };
         }
-        else if (_level == 2 || _level == 5 || _level == 8)
+        else if (_level == 1 || _level == 4 || _level == 7)
         {
             _ghosts = new Ghost[] {
                     new PinkGhost(SP_CENTER),
@@ -695,7 +695,7 @@ public class Game implements IGame
                     new SmartGhost(SP_CENTER),
             };
         }
-        else if (_level == 3 || _level == 6 || _level == 9)
+        else if (_level == 2 || _level == 5 || _level == 8)
         {
             _ghosts = new Ghost[] {
                     new PinkGhost(SP_CENTER),

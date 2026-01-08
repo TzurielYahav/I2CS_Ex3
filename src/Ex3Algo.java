@@ -145,11 +145,11 @@ public class Ex3Algo implements PacManAlgo
         return !(p.getX() >= 8 && p.getX() <= 14 && p.getY() >= 10 && p.getY() <= 13);
     }
 
-    private boolean hasNoGhosts(Pixel2D p)
+    private boolean isValidEscape(Pixel2D p)
     {
         for (GhostCL ghost : _ghosts)
         {
-            if (p.distance2D(pixelFromString(ghost.getPos(CODE))) <= 1)
+            if (p.distance2D(pixelFromString(ghost.getPos(CODE))) <= 2)
             {
                 return false;
             }
@@ -331,6 +331,10 @@ public class Ex3Algo implements PacManAlgo
         if (!_waypoints.isEmpty())
             target = _waypoints.removeFirst();
 
+        System.out.println(_pos);
+        if (target != null)
+            System.out.println(target);
+
         int bestRoute = 0;
         int direction = 0;
 
@@ -340,7 +344,7 @@ public class Ex3Algo implements PacManAlgo
         sides[2] = new Index2D(_pos.getX() - 1, _pos.getY()); // the LEFT neighbor of the current cell
         sides[3] = new Index2D(_pos.getX() + 1, _pos.getY()); // the RIGHT neighbor of the current cell
 
-        if (target != null && hasNoGhosts(target))
+        if (target != null && isValidEscape(target))
         {
             direction = getDirection(target);
         }
@@ -348,14 +352,15 @@ public class Ex3Algo implements PacManAlgo
         {
             for (Pixel2D side : sides)
             {
-                if (bestRoute < escapePlan.getPixel(side) && hasNoGhosts(side) && notInCenter(side))
+                if (bestRoute < escapePlan.getPixel(side) && isValidEscape(side) && notInCenter(side))
                 {
                     bestRoute = escapePlan.getPixel(side);
                     direction = getDirection(side);
+                    System.out.println(" choose " + direction);
                 }
             }
         }
-
+        System.out.println(" out " + direction);
         return direction;
     }
 

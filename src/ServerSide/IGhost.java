@@ -8,7 +8,7 @@ public interface IGhost
     int FLEE = 3;
     int CONFUSED = 4;
     int SCATTER = 5;
-    double EATABLE_TIMEOUT = 15000;
+    double EATABLE_TIMEOUT = 5000;
     int MOVE_DELAY = 1;
     int TYPE_STUPID = 0;
     int TYPE_RED = 1;

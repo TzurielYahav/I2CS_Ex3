@@ -57,7 +57,7 @@ public interface IGame
     int BIG_FRUIT_VALUE = 3;
     Color[] COLORS = new Color[4];
     int PLAYER_MOVE_DELAY = 0;
-    int GHOST_START_SCATTER_TIME = 25000;
+    int GHOST_START_SCATTER_TIME = 60000;
     int GHOST_END_SCATTER_TIME = 4000;
     int FRUIT_SCORE = 10;
     int BIG_FRUIT_SCORE = 50;

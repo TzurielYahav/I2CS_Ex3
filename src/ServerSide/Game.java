@@ -139,10 +139,10 @@ public class Game implements IGame
         while(_gameStatus != IGame.DONE)
         {
             processInput();
-            if (getManualMode())
+            if (!getManualMode())
                 move(man.move(this));
             move(0);
-//            StdDraw.pause(50);
+            StdDraw.pause(50);
         }
     }
 

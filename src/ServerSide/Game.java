@@ -165,6 +165,10 @@ public class Game implements IGame
     public void end(int status)
     {
         _gameStatus = IGame.DONE;
+        StdDraw.picture(X_Scale / 2, Y_Scale / 2, GAMEOVER_IMG, X_Scale / 2, X_Scale / 3);
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.setPenRadius(1);
+        StdDraw.text(X_Scale / 2, Y_Scale / 2 - (Y_Scale / 8), "Score  " + _score);
     }
 
     public void move(int direction)
@@ -264,11 +268,9 @@ public class Game implements IGame
             PointInt2D newPos = _map.pixelToBounds(directions[direction]);
             if (_map.isInside(newPos))
             {
+                _playerLastPos = new PointInt2D(_playerPos);
                 if (_map.getPixel(newPos) != OBSTACLE_VALUE)
-                {
-                    _playerLastPos = new PointInt2D(_playerPos);
                     _playerPos = newPos;
-                }
                 _playerDirection = direction;
             }
         }

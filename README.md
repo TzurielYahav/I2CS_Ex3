@@ -131,28 +131,39 @@ The server side structure is as follows:
 * The `GameMap` class is responsible for creating and editing the game map for each level.
 * The `PointInt2D` class is a structure representing a point in 2D space.
 
-<br></br>
-
-#### Main Functions
-
-    public static void drawMap()
-
-* This function Draws the Map object of the Ex2_GUI class
-
-<br></br>
-
-
-    public static Map2D loadMap(String mapFileName) throws FileNotFoundException
-
-* This function loads a map from a txt file
-
-<br></br>
-
-    public static void saveMap(Map2D map, String mapFileName)
-
-* This function saves the map into a txt file
+The server works as follows:
+* The server initializes the game with `init()`.
+* The main game loop starts and the menu is shown.
+* After pressing to start the game the first level starts.
+* The game loop order is:
+    * Process input
+    * Draw UI
+    * Move player
+    * Draw player
+    * Check for collision of player with ghosts
+    * Move ghosts
+    * Draw ghosts
+    * Check for collision of player with ghosts
 
 <br></br>
+In order to use the game:
+* Make a main class that will run the game as follows
+
+
+    static void main(String[] args)
+    {
+        Game game = new Game(GameInfo._DT);
+        PacmanAlgo man = new PacmanAutoAlgo();
+        game.startGame(man);   //new Game(level);
+    }
+
+* Make the class `PacmanAutoAlgo` (implementing the `PacmanAlgo` interface), that will be responsible for the Pacman algorithm.
+<br></br>
+
+### Result
+
+
+
 
 
 

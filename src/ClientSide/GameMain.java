@@ -9,11 +9,7 @@ import ServerSide.PacmanAlgo;
 
 public class GameMain
 {
-    static void main(String[] args) {
-        play();
-    }
-
-    public static void play()
+    static void main(String[] args)
     {
         Game game = new Game(GameInfo._DT);
         PacmanAlgo man = new PacmanAutoAlgo();

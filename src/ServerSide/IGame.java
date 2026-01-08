@@ -15,6 +15,9 @@ public interface IGame
     int DOWN = 3;
     int RIGHT = 4;
     String PLAYER_IMG = "player.png";
+    String MENU_IMG = "PacmanMenu.jpg";
+    String MENU_IMG2 = "PacmanMenu2.jpg";
+    String GAMEOVER_IMG = "PacmanGameOver.jpg";
     String[] ghostImages = {
             "ConfusedGhost.png",
             "FleeingGhost.png",
@@ -53,6 +56,8 @@ public interface IGame
     int BIG_FRUIT_VALUE = 3;
     Color[] COLORS = new Color[4];
     int PLAYER_MOVE_DELAY = 0;
+    int GHOST_START_SCATTER_TIME = 25000;
+    int GHOST_END_SCATTER_TIME = 4000;
     int FRUIT_SCORE = 10;
     int BIG_FRUIT_SCORE = 50;
     int GHOST_SCORE = 200;

@@ -8,12 +8,13 @@ public class Game implements IGame
     private PointInt2D SP_TOP_RIGHT;
     private PointInt2D SP_BOTTOM_LEFT;
     private PointInt2D SP_BOTTOM_RIGHT;
+    private PointInt2D SP_CENTER;
+    private PointInt2D OUT_OF_GATE = new PointInt2D(11,14);
     private int _gameStatus;
     private int _score;
+    private int _level = 1;
     private long _gameStartTime;
     private long _lastFrameTime = 0;
-    private final int _ghostStartScatterTime = 20000;
-    private final int _ghostEndScatterTime = 4000;
     private long _ghostScatterCounter = 0;
     private int _dt;
     private double Y_Scale;
@@ -24,6 +25,8 @@ public class Game implements IGame
     private int _playerDirection;
     private int _playerDelayCount = 0;
     private Ghost[] _ghosts;
+    private boolean _inMenu = true;
+    private boolean _menuAnimation = false;
 
 
     public Game()
@@ -47,13 +50,13 @@ public class Game implements IGame
         COLORS[FRUIT_VALUE] = StdDraw.PINK;
         COLORS[BIG_FRUIT_VALUE] = StdDraw.GREEN;
 
-        createLevel(1);
+        createLevel();
 
         // ====== Canvas Init ======
         StdDraw.setCanvasSize(CANVAS_WIDTH, CANVAS_HEIGHT);
 
         // =======================================
-        DrawGame();
+        drawMenu();
     }
 
     public int getStatus()
@@ -87,10 +90,18 @@ public class Game implements IGame
 
     public void play()
     {
-        _gameStatus = IGame.PLAY;
-        _gameStartTime = System.currentTimeMillis();
-        _lastFrameTime = System.currentTimeMillis();
-        ghostSetScatter();
+        if (_inMenu)
+        {
+            drawGame();
+            _inMenu = false;
+        }
+        else
+        {
+            _gameStatus = IGame.PLAY;
+            _gameStartTime = System.currentTimeMillis();
+            _lastFrameTime = System.currentTimeMillis();
+            ghostSetScatter();
+        }
     }
 
     public void end(int status)
@@ -100,6 +111,11 @@ public class Game implements IGame
 
     public void move(int direction)
     {
+        if (_inMenu)
+        {
+            StdDraw.pause(1000);
+            drawMenu();
+        }
         if (_gameStatus != IGame.PLAY)
             return;
         long currentTimeMillis = System.currentTimeMillis();
@@ -108,6 +124,10 @@ public class Game implements IGame
         if (elapsedFrameTimeMillis > 1)
         {
             _lastFrameTime = currentTimeMillis;
+
+            // ========= Player ========
+            movePlayer(direction);
+
             // ========= Ghost ========
             moveGhosts();
             if (Ghost._delay == IGhost.MOVE_DELAY)
@@ -115,15 +135,12 @@ public class Game implements IGame
             else
                 Ghost.addDelayCount();
 
-            // ========= Player ========
-            movePlayer(direction);
-
-
+            drawUpdate();
+            checkEatenByGhosts();
 
             // ========= Check victory ========
-            drawGhosts();
-            drawPlayer();
-            drawInfo();
+
+
         }
     }
 
@@ -137,10 +154,16 @@ public class Game implements IGame
         if (_ghosts[0]._status == INIT)
             return;
         ghostCheckScatter();
-        boolean hasEatenPlayer = false;
         for (Ghost ghost : _ghosts)
         {
             ghost.move();
+        }
+    }
+
+    private void checkEatenByGhosts()
+    {
+        for (Ghost ghost : _ghosts)
+        {
             if (ghost._pos.equals(_playerPos))
             {
                 if (ghost.isEatable())
@@ -152,11 +175,9 @@ public class Game implements IGame
                     }
                 }
                 else
-                    hasEatenPlayer = true;
+                    end(0);
             }
         }
-        if (hasEatenPlayer)
-            end(0);
     }
     
     private void movePlayer(int direction)
@@ -238,26 +259,24 @@ public class Game implements IGame
     {
         if (_ghosts[0]._status == IGhost.SCATTER)
         {
-            if (System.currentTimeMillis() > _ghostScatterCounter + _ghostEndScatterTime)
+            if (System.currentTimeMillis() > _ghostScatterCounter + GHOST_END_SCATTER_TIME)
                 ghostSetActive();
         }
         else
         {
-            if (System.currentTimeMillis() > _ghostScatterCounter + _ghostStartScatterTime)
+            if (System.currentTimeMillis() > _ghostScatterCounter + GHOST_START_SCATTER_TIME)
                 ghostSetScatter();
         }
     }
 
-    private void DrawGame()
+    private void drawGame()
     {
         double infoHeight = (double) INFO_Y_HEIGHT / (((double) CANVAS_HEIGHT - (double) INFO_Y_HEIGHT) / Y_Scale);
         StdDraw.setXscale(0,X_Scale);
         StdDraw.setYscale(0,Y_Scale + infoHeight);
         StdDraw.clear();
         drawMap();
-        drawInfo();
-        drawGhosts();
-        drawPlayer();
+        drawUpdate();
     }
 
     private void drawInfo()
@@ -303,25 +322,21 @@ public class Game implements IGame
             StdDraw.filledCircle(x, y, bigFruitScale);
     }
 
-    private void drawPlayer()
+    private void drawUpdate()
     {
-        double cellScale = X_Scale / (_map.getWidth() * 2);
-        double imageScale = X_Scale / (_map.getWidth() * 1.5);
-
+        drawInfo();
         drawCell(new PointInt2D(_playerLastPos.getX(), _playerLastPos.getY()));
-        StdDraw.picture(_playerPos.getX() + cellScale, _playerPos.getY() + cellScale, PLAYER_IMG, imageScale, imageScale, _playerDirection * 90);
-    }
-
-    private void drawGhosts()
-    {
         for (Ghost ghost : _ghosts)
         {
             drawCell(ghost.getPrevPos());
         }
+        double cellScale = X_Scale / (_map.getWidth() * 2);
+        double imageScale = X_Scale / (_map.getWidth() * 1.5);
+        StdDraw.picture(_playerPos.getX() + cellScale, _playerPos.getY() + cellScale, PLAYER_IMG, imageScale, imageScale, _playerDirection * 90);
         for (Ghost ghost : _ghosts)
         {
-            double cellScale = X_Scale / (_map.getWidth() * 2);
-            double imageScale = X_Scale / (_map.getWidth() * 1.5);
+            cellScale = X_Scale / (_map.getWidth() * 2);
+            imageScale = X_Scale / (_map.getWidth() * 1.5);
             String image;
             if (ghost._status == IGhost.FLEE)
                 image = ghostImages[1];
@@ -333,13 +348,43 @@ public class Game implements IGame
         }
     }
 
-    private void createLevel(int level)
+    private void drawMenu()
     {
-        if (level == 1)
+        if (_menuAnimation)
+        {
+            StdDraw.picture(X_Scale / (_map.getWidth() * 2), Y_Scale / (_map.getHeight() * 2), MENU_IMG, X_Scale / _map.getWidth(), Y_Scale / _map.getHeight());
+            _menuAnimation = false;
+        }
+        else
+        {
+            StdDraw.picture(X_Scale / (_map.getWidth() * 2), Y_Scale / (_map.getHeight() * 2), MENU_IMG2, X_Scale / _map.getWidth(), Y_Scale / _map.getHeight());
+            _menuAnimation = true;
+        }
+    }
+
+    public void changeLevel(int level)
+    {
+        if (level < 1)
+            _level = 1;
+        else if (_level > 9)
+            _level = 9;
+        else
+            _level = level;
+        _gameStatus = INIT;
+        _score = 0;
+        _ghostScatterCounter = 0;
+        StdDraw.clear();
+        createLevel();
+        drawGame();
+    }
+
+    private void createLevel()
+    {
+        if (_level == 1 || _level == 2 || _level == 3)
         {
             int[][] mapArr = {
                     { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
-                    { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1 },
+                    { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1 },
                     { 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1 },
                     { 1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1 },
                     { 1, 1, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 1, 1 },
@@ -352,7 +397,7 @@ public class Game implements IGame
                     { 2, 2, 2, 2, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2 },
                     { 1, 1, 2, 1, 1, 2, 1, 2, 1, 0, 0, 0, 0, 0, 1, 2, 1, 2, 1, 1, 2, 1, 1 },
                     { 1, 2, 2, 2, 2, 2, 1, 2, 1, 1, 1, 0, 1, 1, 1, 2, 1, 2, 2, 2, 2, 2, 1 },
-                    { 1, 1, 1, 1, 1, 2, 1, 2, 2, 2, 2, 0, 2, 2, 2, 2, 1, 2, 1, 1, 1, 1, 1 },
+                    { 1, 1, 1, 1, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1, 1, 1, 1, 1 },
                     { 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1 },
                     { 1, 2, 1, 2, 1, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 1, 2, 1, 2, 1 },
                     { 1, 2, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 2, 1 },
@@ -366,22 +411,124 @@ public class Game implements IGame
             SP_TOP_RIGHT = new PointInt2D(_map.getWidth() - 1,_map.getHeight());
             SP_BOTTOM_LEFT = new PointInt2D(0,-1);
             SP_BOTTOM_RIGHT = new PointInt2D(_map.getWidth() - 1,-1);
-            _playerPos = new PointInt2D(11, 14);
-            _playerLastPos = new PointInt2D(11, 14);
+            SP_CENTER =  new PointInt2D(11, 11);
+            OUT_OF_GATE = new PointInt2D(11,14);
+            _playerPos = new PointInt2D(11, 1);
+            _playerLastPos = new PointInt2D(11, 1);
             _playerDirection = 4;
-            _ghosts = new Ghost[] {
-                    new PinkGhost(11,11),
-                    new RedGhost(11,11),
-                    new BlueGhost(11,11),
-                    new OrangeGhost(11,11),
-                    new SmartGhost(11,11),
-            };
             _map.setCyclic(true);
 
         }
-        else if (level == 2)
+        else if (_level == 4 || _level == 5 || _level == 6)
         {
+            int[][] mapArr = new int[][]{
+                    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+                    {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
+                    {1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1},
+                    {1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1},
+                    {1, 1, 1, 2, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1, 1, 1},
+                    {1, 3, 2, 2, 1, 1, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 3, 1},
+                    {1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1},
+                    {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
+                    {1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1},
+                    {1, 1, 1, 1, 1, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 1, 1, 1, 1, 1},
+                    {1, 1, 1, 1, 1, 1, 2, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 2, 1, 1, 1, 1, 1, 1},
+                    {2, 2, 2, 2, 2, 2, 2, 2, 0, 1, 0, 0, 0, 0, 1, 0, 2, 2, 2, 2, 2, 2, 2, 2}, //
+                    {1, 1, 1, 1, 1, 1, 2, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 2, 1, 1, 1, 1, 1, 1},
+                    {1, 1, 1, 1, 1, 1, 2, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 2, 1, 1, 1, 1, 1, 1},
+                    {1, 1, 1, 1, 1, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 1, 1, 1, 1, 1},
+                    {1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1},
+                    {1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1},
+                    {1, 2, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2, 1},
+                    {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
+                    {1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1},
+                    {1, 3, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 3, 1},
+                    {1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1},
+                    {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
+                    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+            };
+            _map.init(mapArr);
+            SP_TOP_LEFT = new PointInt2D(0, _map.getHeight());
+            SP_TOP_RIGHT = new PointInt2D(_map.getWidth() - 1,_map.getHeight());
+            SP_BOTTOM_LEFT = new PointInt2D(0,-1);
+            SP_BOTTOM_RIGHT = new PointInt2D(_map.getWidth() - 1,-1);
+            SP_CENTER =  new PointInt2D(11, 11);
+            OUT_OF_GATE = new PointInt2D(11,14);
+            _playerPos = new PointInt2D(11, 5);
+            _playerLastPos = new PointInt2D(11, 5);
+            _playerDirection = 4;
+            _map.setCyclic(true);
+        }
+        else if (_level == 7 || _level == 8 || _level == 9)
+        {
+            int[][] mapArr = new int[][]{
+                    {2, 2, 2, 1, 2, 1, 2, 2, 2, 1, 2, 1, 2, 1, 2, 2, 2, 1, 2, 1, 2, 2, 2},
+                    {2, 1, 2, 1, 2, 2, 2, 1, 2, 1, 2, 2, 2, 1, 2, 1, 2, 2, 2, 1, 2, 1, 2},
+                    {2, 2, 2, 2, 2, 1, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2},
+                    {1, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 1},
+                    {2, 2, 2, 2, 3, 2, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 2, 3, 2, 2, 2, 2},
+                    {1, 2, 1, 1, 2, 1, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 1, 2, 1, 1, 2, 1},
+                    {2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2},
+                    {2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 2, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2},
+                    {2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2},
+                    {1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2, 1, 1, 2, 1, 1},
+                    {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2},
+                    {1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 0, 0, 0, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1},
+                    {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2},
+                    {1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2, 1, 1, 2, 1, 1},
+                    {2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2},
+                    {2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 2, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2},
+                    {2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2},
+                    {1, 2, 1, 1, 2, 1, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 1, 2, 1, 1, 2, 1},
+                    {2, 2, 2, 2, 3, 2, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 2, 3, 2, 2, 2, 2},
+                    {1, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 1},
+                    {2, 2, 2, 2, 2, 1, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2},
+                    {2, 1, 2, 1, 2, 2, 2, 1, 2, 1, 2, 2, 2, 1, 2, 1, 2, 2, 2, 1, 2, 1, 2},
+                    {2, 2, 2, 1, 2, 1, 2, 2, 2, 1, 2, 1, 2, 1, 2, 2, 2, 1, 2, 1, 2, 2, 2}
+            };
+            _map.init(mapArr);
+            SP_TOP_LEFT = new PointInt2D(0, _map.getHeight());
+            SP_TOP_RIGHT = new PointInt2D(_map.getWidth() - 1,_map.getHeight());
+            SP_BOTTOM_LEFT = new PointInt2D(0,-1);
+            SP_BOTTOM_RIGHT = new PointInt2D(_map.getWidth() - 1,-1);
+            SP_CENTER =  new PointInt2D(11, 11);
+            OUT_OF_GATE = new PointInt2D(-1,-1);
+            _playerPos = new PointInt2D(11, 1);
+            _playerLastPos = new PointInt2D(11, 2);
+            _playerDirection = 4;
+            _map.setCyclic(true);
+        }
 
+        if (_level == 1 || _level == 4 || _level == 7)
+        {
+            _ghosts = new Ghost[] {
+                    new StupidGhost(SP_CENTER),
+                    new StupidGhost(SP_CENTER),
+                    new StupidGhost(SP_CENTER),
+                    new SmartGhost(SP_CENTER),
+                    new RedGhost(SP_CENTER),
+            };
+        }
+        else if (_level == 2 || _level == 5 || _level == 8)
+        {
+            _ghosts = new Ghost[] {
+                    new PinkGhost(SP_CENTER),
+                    new RedGhost(SP_CENTER),
+                    new BlueGhost(SP_CENTER),
+                    new OrangeGhost(SP_CENTER),
+                    new SmartGhost(SP_CENTER),
+            };
+        }
+        else if (_level == 3 || _level == 6 || _level == 9)
+        {
+            _ghosts = new Ghost[] {
+                    new PinkGhost(SP_CENTER),
+                    new RedGhost(SP_CENTER),
+                    new BlueGhost(SP_CENTER),
+                    new OrangeGhost(SP_CENTER),
+                    new SmartGhost(SP_CENTER),
+                    new TerminatorGhost(SP_CENTER),
+            };
         }
         Y_Scale = _map.getHeight();
         X_Scale = _map.getWidth();
@@ -795,7 +942,7 @@ public class Game implements IGame
 
         public void setConfused()
         {
-            if (_status == PLAY || _status == INIT)
+            if (_status == PLAY || _status == INIT || _status == FLEE)
             {
                 _status = CONFUSED;
                 _didTurn180 = false;
@@ -892,8 +1039,14 @@ public class Game implements IGame
             else
                 moveToDirection(turn180());
             if (_pos.equals(BASE))
-                setActive();
+            {
+                if (remainTimeAsEatable() > 0)
+                    setConfused();
+                else
+                    setActive();
+            }
         }
+
 
         public void moveConfused()
         {
@@ -958,7 +1111,7 @@ public class Game implements IGame
                     if (i % 4 != (_dir + 2) % 4)
                     {
                         PointInt2D p = _map.pixelToBounds(directions[i]);
-                        if (_map.getPixel(p) != OBSTACLE_VALUE && p.distance2D(aimPoint) < distToPlayer)
+                        if (_map.getPixel(p) != OBSTACLE_VALUE && p.distance2D(aimPoint) < distToPlayer && (!_pos.equals(OUT_OF_GATE) || !p.equals(new PointInt2D(11, 13))))
                         {
                             target = p;
                             distToPlayer = p.distance2D(aimPoint);
@@ -1021,6 +1174,11 @@ public class Game implements IGame
             super(x, y, TYPE_STUPID);
         }
 
+        StupidGhost(PointInt2D pos)
+        {
+            this(pos.getX(), pos.getY());
+        }
+
         @Override
         public void move()
         {
@@ -1030,16 +1188,62 @@ public class Game implements IGame
                 if (getPointPos().distance2D(BASE) <= 1)
                     super.moveToDirection(coloredGhostMove(OUT_OF_GATE));
                 else
-                    moveConfused();
+                    super.moveToDirection(stupidAlgo());
             }
+        }
+
+        private int stupidAlgo()
+        {
+            if (Ghost._delay == MOVE_DELAY)
+            {
+                if (!super._didTurn180)
+                {
+                    return super.turn180();
+                }
+                PointInt2D target = new PointInt2D(super._pos);
+                double bestOption = Double.MAX_VALUE;
+                PointInt2D[] directions =
+                        {
+                        new PointInt2D(),
+                        new PointInt2D(super._pos.getX(), super._pos.getY() + 1),
+                        new PointInt2D(super._pos.getX() - 1, super._pos.getY()),
+                        new PointInt2D(super._pos.getX(), super._pos.getY() - 1),
+                        new PointInt2D(super._pos.getX() + 1, super._pos.getY()),
+                };
+                for (int i = 1; i < 5; i++)
+                {
+                    if (i % 4 != (super._dir + 2) % 4)
+                    {
+                        PointInt2D p = _map.pixelToBounds(directions[i]);
+                        double rand = Math.random();
+                        if (_map.getPixel(p) != OBSTACLE_VALUE && rand < bestOption)
+                        {
+                            target = p;
+                            bestOption = rand;
+                        }
+                    }
+                }
+                if (target.equals(super._pos))
+                    return super.turn180();
+                else
+                    return super.getDirectionFromPoint(target);
+            }
+            return 0;
         }
     }
 
     private class SmartGhost extends Ghost
     {
+        private int smartDelay = 0;
+
         SmartGhost(int x, int y)
         {
             super(x, y, TYPE_SMART);
+        }
+
+        SmartGhost(PointInt2D pos)
+        {
+            this(pos.getX(), pos.getY());
         }
 
         @Override
@@ -1052,8 +1256,9 @@ public class Game implements IGame
 
         private int followPlayer()
         {
-            if (super._delay == 1)
+            if (smartDelay == 1)
             {
+                smartDelay = 0;
                 ArrayList<PointInt2D> waypoints = _map.shortestPath(super._pos, _playerPos, OBSTACLE_VALUE);
 
                 if (waypoints != null)
@@ -1063,6 +1268,7 @@ public class Game implements IGame
                 }
                 return 0;
             }
+            smartDelay++;
             return 0;
         }
     }
@@ -1072,6 +1278,11 @@ public class Game implements IGame
         RedGhost(int x, int y)
         {
             super(x, y, TYPE_RED);
+        }
+
+        RedGhost(PointInt2D pos)
+        {
+            this(pos.getX(), pos.getY());
         }
 
         @Override
@@ -1098,6 +1309,11 @@ public class Game implements IGame
         BlueGhost(int x, int y)
         {
             super(x, y, TYPE_BLUE);
+        }
+
+        BlueGhost(PointInt2D pos)
+        {
+            this(pos.getX(), pos.getY());
         }
 
         @Override
@@ -1155,6 +1371,11 @@ public class Game implements IGame
             super(x, y, TYPE_PINK);
         }
 
+        PinkGhost(PointInt2D pos)
+        {
+            this(pos.getX(), pos.getY());
+        }
+
         @Override
         public void move()
         {
@@ -1195,6 +1416,11 @@ public class Game implements IGame
             super(x, y, TYPE_ORANGE);
         }
 
+        OrangeGhost(PointInt2D pos)
+        {
+            this(pos.getX(), pos.getY());
+        }
+
         @Override
         public void move()
         {
@@ -1226,6 +1452,11 @@ public class Game implements IGame
         TerminatorGhost(int x, int y)
         {
             super(x, y, TYPE_TERMINATOR);
+        }
+
+        TerminatorGhost(PointInt2D pos)
+        {
+            this(pos.getX(), pos.getY());
         }
 
         @Override

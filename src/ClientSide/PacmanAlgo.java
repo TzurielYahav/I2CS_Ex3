@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class PacmanAlgo
 {
-    private boolean _manual = false;
+    private boolean _manual = true;
     private final ArrayList<Pixel2D> _waypoints;
     private Pixel2D _pos;
     private Map _map;

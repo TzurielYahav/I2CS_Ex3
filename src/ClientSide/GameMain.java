@@ -27,17 +27,15 @@ public class GameMain
             if (_cmd !=null)
             {
                 if (_cmd == ' ')
-                {
                     game.play();
-                }
                 if (_cmd == 'q') {
                     game.end(2);}
-                if (_cmd == 'm') {man.changeGameMode();}
-
+                if (_cmd == 'm')
+                    man.changeGameMode();
                 if (_cmd == 'h')
-                {
                     System.out.println("Pacman help: keys: ' '-start, 'w,a,s,d'-directions, all other parameters should be configured via GameInfo.java, ");
-                }
+                if (_cmd >= '1' && _cmd <= '9')
+                    game.changeLevel(Character.getNumericValue(_cmd));
             }
             game.move(man.move(game));
         }

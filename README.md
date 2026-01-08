@@ -4,24 +4,47 @@ This is a repository for project 3 of the course - Introduction to Computer Scie
 <br></br>
 ## Contents
 ### Classes
-* Ex2_GUI
+* Ex3Algo
+* ManualAlgo
+* Ex3Main
+* GameInfo
 * Index2D
-* Index2DTest
 * Map
-* MapTest
-* StdDraw
-
-### Interfaces
+#### Interfaces
 * Map2D
 * Pixel2D
 
+### Package - ServerSide
+* Game (including Ghost, GameMap)
+* PointInt2D
+* StdDraw
+* Resource files (images)
+#### Interfaces
+* IGame
+* IGhost
+
+### Package - ClientSide
+* GameInfo
+* GameMain
+* Index2D
+* Map
+* PacmanAlgo
+#### Interfaces
+* Pixel2D
+* Map2D
+
+
 <br></br>
 ## Usage
-### Map
+### Pacman Algorithm
 #### Description
-This is the main class in this project. This class is responsible for the pathfinding algorithms and creating a new map object
+The first part of the project is the Pacman algorithm showcase.<br></br>
+To open the project run the *Ex3Main* file.<br></br>
+To use the project: Press 'Space' to start, 'H' for help
+The program will start the Pacman game with the auto algorithm.
+
 <br></br>
-#### Main Functions
+#### The Pacman algorithm
 
     public int fill(Pixel2D p, int new_v, boolean cyclic);
 

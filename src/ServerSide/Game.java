@@ -1,5 +1,7 @@
 package ServerSide;
 
+import ClientSide.PacmanAlgo;
+
 import java.util.ArrayList;
 
 public class Game implements IGame
@@ -25,6 +27,8 @@ public class Game implements IGame
     private PointInt2D _playerLastPos;
     private int _playerDirection;
     private int _playerDelayCount = 0;
+    private boolean _manualMode = true;
+    private int _manualCMD = 0;
     private Ghost[] _ghosts;
     private boolean _inMenu = true;
     private boolean _menuAnimation = false;
@@ -71,6 +75,16 @@ public class Game implements IGame
         return _map.getMap();
     }
 
+    public boolean getManualMode()
+    {
+        return _manualMode;
+    }
+
+    private void changeGameMode()
+    {
+        _manualMode = !_manualMode;
+    }
+
     public Character getKeyChar()
     {
         if (StdDraw.hasNextKeyTyped())
@@ -78,14 +92,32 @@ public class Game implements IGame
         return null;
     }
 
-    public ArrayList<Character> getInput()
+    private void processInput()
     {
-        ArrayList<Character> characters = new ArrayList<>();
         while (StdDraw.hasNextKeyTyped())
         {
-            characters.add(StdDraw.nextKeyTyped());
+            char character = StdDraw.nextKeyTyped();
+            if (character == ' ')
+            {
+                play();
+                return;
+            }
+            if (character == 'q')
+                end(2);
+            if (character == 'm')
+                changeGameMode();
+            if (character == 'h')
+                System.out.println("Pacman help: keys: ' '-start, 'w,a,s,d'-directions, all other parameters should be configured via GameInfo.java, ");
+            if (character >= '1' && character <= '9')
+            {
+                changeLevel(Character.getNumericValue(character));
+                return;
+            }
+            if (character == 'w') {_manualCMD = Game.UP;}
+            if (character == 's') {_manualCMD = Game.DOWN;}
+            if (character == 'a') {_manualCMD = Game.LEFT;}
+            if (character == 'd') {_manualCMD = Game.RIGHT;}
         }
-        return characters;
     }
 
     public String getPlayerPos()
@@ -98,6 +130,20 @@ public class Game implements IGame
         IGhost[] ghosts = new IGhost[_ghosts.length];
         System.arraycopy(_ghosts, 0, ghosts, 0, _ghosts.length);
         return ghosts;
+    }
+
+
+    public void startGame()
+    {
+        PacmanAlgo man = new PacmanAlgo();
+        while(_gameStatus != IGame.DONE)
+        {
+            processInput();
+            if (getManualMode())
+                move(man.move(this));
+            move(0);
+//            StdDraw.pause(50);
+        }
     }
 
     public void play()
@@ -133,12 +179,16 @@ public class Game implements IGame
         long currentTimeMillis = System.currentTimeMillis();
         long elapsedFrameTimeMillis = (currentTimeMillis - _lastFrameTime) / _dt;
 
-        if (elapsedFrameTimeMillis > 1) {
-            System.out.println("Moving " + direction);
-
+        if (elapsedFrameTimeMillis > 1)
+        {
             _lastFrameTime = currentTimeMillis;
 
             // ========= Player ========
+            if (_manualMode)
+            {
+                direction = _manualCMD;
+                _manualCMD = 0;
+            }
             movePlayer(direction);
 
             // ========= Ghost ========
@@ -151,7 +201,8 @@ public class Game implements IGame
             drawUpdate();
             checkEatenByGhosts();
         }
-            // ========= Check victory ========
+
+        // ========= Check victory ========
 
 //        long currentTime = System.currentTimeMillis();
 //        long elapsedTime = currentTime - _lastFrameTime;

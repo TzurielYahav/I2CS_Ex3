@@ -28,7 +28,7 @@ public class Game implements IGame
     private boolean _inMenu = true;
     private boolean _menuAnimation = false;
 
-    /// MANUAL  GAMEOVER  SAVE
+    /// MANUAL  GAMEOVER  SAVE PAUSE
 
     public Game()
     {
@@ -75,6 +75,16 @@ public class Game implements IGame
         if (StdDraw.hasNextKeyTyped())
             return StdDraw.nextKeyTyped();
         return null;
+    }
+
+    public ArrayList<Character> getInput()
+    {
+        ArrayList<Character> characters = new ArrayList<>();
+        while (StdDraw.hasNextKeyTyped())
+        {
+            characters.add(StdDraw.nextKeyTyped());
+        }
+        return characters;
     }
 
     public String getPlayerPos()
@@ -124,6 +134,8 @@ public class Game implements IGame
 
         if (elapsedFrameTimeMillis > 1)
         {
+            System.out.println("Moving " + direction);
+
             _lastFrameTime = currentTimeMillis;
 
             // ========= Player ========
@@ -202,10 +214,13 @@ public class Game implements IGame
                     new PointInt2D(_playerPos.getX() + 1, _playerPos.getY()),
             };
             PointInt2D newPos = _map.pixelToBounds(directions[direction]);
-            if (_map.isInside(newPos) && _map.isInside(newPos))
+            if (_map.isInside(newPos))
             {
-                _playerLastPos = new PointInt2D(_playerPos);
-                _playerPos = newPos;
+                if (_map.getPixel(newPos) != OBSTACLE_VALUE)
+                {
+                    _playerLastPos = new PointInt2D(_playerPos);
+                    _playerPos = newPos;
+                }
                 _playerDirection = direction;
             }
         }

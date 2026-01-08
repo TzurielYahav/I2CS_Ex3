@@ -47,7 +47,9 @@ public class PacmanAlgo
     {
         int ans = Game.ERR;
         Character cmd = GameMain.getCMD();
+
         if (cmd != null) {
+            System.out.println("Algo CMD " + cmd.toString());
             if (cmd == 'w') {ans = Game.UP;}
             if (cmd == 's') {ans = Game.DOWN;}
             if (cmd == 'a') {ans = Game.LEFT;}

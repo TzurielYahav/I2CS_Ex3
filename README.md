@@ -84,42 +84,51 @@ This function works as follows:
 <br></br>
 
     private int escapeGhosts(Map2D escapePlan)
+
+This function works as follows:
+* If there is already a path to the nearest fruit, make it the target.
+* Check if there are no ghosts within 1 tile of the target, and if it is not a closed tile (has less than 3 walls around it).
+* If true, return the direction to it.
+* Else, for each side around us, check if it has no ghosts within 1 tile, if it's not a closed tile, not the entrance to the ghost house, and if it's sum of distances from the closest ghost is the highest yet.
+* If true make it our escape tile.
+* Return the best escape tile.
+
+<br></br>
+
+    private int chaseGhost()
     {
-        Pixel2D target = null;
-        if (!_waypoints.isEmpty())
-            target = _waypoints.removeFirst();
-
-        int bestRoute = 0;
-        int direction = 0;
-
-        Pixel2D[] sides = new Index2D[4];
-        sides[0] = new Index2D(_pos.getX(), _pos.getY() + 1); // the UP neighbor of the current cell
-        sides[1] = new Index2D(_pos.getX(), _pos.getY() - 1); // the DOWN neighbor of the current cell
-        sides[2] = new Index2D(_pos.getX() - 1, _pos.getY()); // the LEFT neighbor of the current cell
-        sides[3] = new Index2D(_pos.getX() + 1, _pos.getY()); // the RIGHT neighbor of the current cell
-
-        if (target != null && hasNoGhosts(target))
+        double closestDistance = Double.MAX_VALUE;
+        int closestGhost = -1;
+        for (int i = 0; i < _ghosts.length; i++)
         {
-            direction = getDirection(target);
-        }
-        else
-        {
-            for (Pixel2D side : sides)
+            double newClosestDistance = pixelFromString(_ghosts[i].getPos(CODE)).distance2D(_pos);
+            if (closestDistance > newClosestDistance && newClosestDistance < CHASE_DISTANCE && notInCenter(getGhostPos(i)))
             {
-                if (bestRoute < escapePlan.getPixel(side) && hasNoGhosts(side) && notInCenter(side))
-                {
-                    bestRoute = escapePlan.getPixel(side);
-                    direction = getDirection(side);
-                }
+                closestDistance = newClosestDistance;
+                closestGhost = i;
             }
         }
+        if (closestGhost == -1)
+            return 0;
 
-        return direction;
+        Map tmpMap = dontEatBigFruits();
+        _waypoints.clear();
+        _waypoints.addAll(tmpMap.shortestPath(_pos, pixelFromString(_ghosts[closestGhost].getPos(CODE)), OBSTACLE_COLOR));
+        _waypoints.removeFirst();
+        if (!_waypoints.isEmpty())
+        {
+            return getDirection(_waypoints.removeFirst());
+        }
+        return 0;
     }
 
 This function works as follows:
-* This function creates a map in which each cell contains a number that represents the distance from the start cell.
-* To do so this function uses the BFS algorithm
+* If there is already a path to the nearest fruit, make it the target.
+* Check if there are no ghosts within 1 tile of the target, and if it is not a closed tile (has less than 3 walls around it).
+* If true, return the direction to it.
+* Else, for each side around us, check if it has no ghosts within 1 tile, if it's not a closed tile, not the entrance to the ghost house, and if it's sum of distances from the closest ghost is the highest yet.
+* If true make it our escape tile.
+* Return the best escape tile.
 
 <br></br>
 ### Ex2_GUI

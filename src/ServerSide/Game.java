@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.awt.Font;
 
 public class Game implements IGame
 {
@@ -36,8 +37,6 @@ public class Game implements IGame
     private Ghost[] _ghosts;
     private boolean _inMenu = true;
     private boolean _menuAnimation = false;
-
-    /// MANUAL  GAMEOVER  SAVE PAUSE
 
     public Game()
     {
@@ -233,8 +232,8 @@ public class Game implements IGame
             _highScore = _score;
         saveScore(SAVE_FILE);
         StdDraw.picture(X_Scale / 2, Y_Scale / 2, GAMEOVER_IMG, X_Scale / 2, X_Scale / 3);
-        StdDraw.setPenColor(StdDraw.WHITE);
-        StdDraw.setPenRadius(1);
+        StdDraw.setPenColor(StdDraw.YELLOW);
+        StdDraw.setFont(new Font("Bauhaus 93", Font.BOLD, 20));
         StdDraw.text(X_Scale / 2, Y_Scale / 2 - (Y_Scale / 8), "Score  " + _score + "  HighScore  " + _highScore);
     }
 
@@ -416,11 +415,11 @@ public class Game implements IGame
         double infoHeight = (double) INFO_Y_HEIGHT / (((double) CANVAS_HEIGHT - (double) INFO_Y_HEIGHT) / Y_Scale);
         StdDraw.setPenColor(StdDraw.BLACK);
         StdDraw.filledRectangle(X_Scale / 2, Y_Scale + infoHeight / 2, X_Scale / 2, infoHeight / 2);
-        StdDraw.setPenColor(StdDraw.WHITE);
-        StdDraw.setPenRadius(0.1);
-//        StdDraw.text(X_Scale / 2, Y_Scale + infoHeight / 4, "'WASD' for movement  |  '1-4' to switch levels  |  'm' to switch to manual  |  'Q' to stop and save");
-        StdDraw.text(X_Scale / 2, Y_Scale + infoHeight / 4, "Pink  " + _ghosts[0]._status + "  |  Red  " + _ghosts[1]._status + "  |  Blue  " + _ghosts[2]._status + "  |  Orange  " + _ghosts[3]._status);
-        StdDraw.text(X_Scale / 2, Y_Scale + infoHeight * 3 / 4, "SCORE  " + _score + "  |  Eatable Time  " + _ghosts[0].remainTimeAsEatable());
+        StdDraw.setPenColor(StdDraw.YELLOW);
+        StdDraw.setFont(new Font("Arial Rounded MT Bold", Font.BOLD, 12));
+        StdDraw.text(X_Scale / 2, Y_Scale + infoHeight * 3 / 4, "'WASD' for movement  |  '1 - 9' to switch levels  |  'm' for Auto Mode  |  'P' to Pause  |  'Q' to exit and save");
+        StdDraw.setFont(new Font("Bauhaus 93", Font.BOLD, 20));
+        StdDraw.text(X_Scale / 2, Y_Scale + infoHeight / 4, "SCORE  " + _score + "  |  Ghosts Eatable Time  " + (_ghosts[0].remainTimeAsEatable() > 0 ? _ghosts[0].remainTimeAsEatable() : 0));
     }
 
     private void drawMap()
@@ -492,6 +491,9 @@ public class Game implements IGame
             StdDraw.picture(X_Scale / (_map.getWidth() * 2), Y_Scale / (_map.getHeight() * 2), MENU_IMG2, X_Scale / _map.getWidth(), Y_Scale / _map.getHeight());
             _menuAnimation = true;
         }
+        StdDraw.setPenColor(StdDraw.YELLOW);
+        StdDraw.setFont(new Font("Bauhaus 93", Font.BOLD, 50));
+        StdDraw.text(0.5, 0.4, "HighScore  " + _highScore);
     }
 
     public void changeLevel(int level)

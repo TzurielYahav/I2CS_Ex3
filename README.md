@@ -60,13 +60,13 @@ This function works as follows:
 * Starts with neutral direction 0.
 * Checks if there is enough time left for the ghosts in eatable state.
 * If true we are in chasing mod, and direction is the outcome of the 'Chase ghosts' state.
-* If not or if we didn't find a close ghost to chase, Calculate a path to the nearest fruit avoiding ghosts, using the chaseFruits() function.
+* If not or if we didn't find a close ghost to chase, Calculate a path to the nearest fruit avoiding ghosts, using the `chaseFruits()` function.
 * If we are in chase mode return the direction of the path to the nearest fruit.
 * If not, check if we have to escape first.
 * For each ghost check if it's active,
-* If true calculate the distance from the ghost to every tile using the allDistance() function.
+* If true calculate the distance from the ghost to every tile using the `allDistance()` function.
 * If the ghost is too far from us ignore it. If it's close add the distances map to the escape plan (the sum of all the close ghosts distances) and change state to 'Escape ghosts'.
-* After checking all ghosts, if we are in escaping mode call escapeGhosts() function.
+* After checking all ghosts, if we are in escaping mode call `escapeGhosts()` function.
 * If not, return the direction from the 'chase fruits' path.
 
 <br></br>
@@ -96,44 +96,41 @@ This function works as follows:
 <br></br>
 
     private int chaseGhost()
-    {
-        double closestDistance = Double.MAX_VALUE;
-        int closestGhost = -1;
-        for (int i = 0; i < _ghosts.length; i++)
-        {
-            double newClosestDistance = pixelFromString(_ghosts[i].getPos(CODE)).distance2D(_pos);
-            if (closestDistance > newClosestDistance && newClosestDistance < CHASE_DISTANCE && notInCenter(getGhostPos(i)))
-            {
-                closestDistance = newClosestDistance;
-                closestGhost = i;
-            }
-        }
-        if (closestGhost == -1)
-            return 0;
-
-        Map tmpMap = dontEatBigFruits();
-        _waypoints.clear();
-        _waypoints.addAll(tmpMap.shortestPath(_pos, pixelFromString(_ghosts[closestGhost].getPos(CODE)), OBSTACLE_COLOR));
-        _waypoints.removeFirst();
-        if (!_waypoints.isEmpty())
-        {
-            return getDirection(_waypoints.removeFirst());
-        }
-        return 0;
-    }
 
 This function works as follows:
-* If there is already a path to the nearest fruit, make it the target.
-* Check if there are no ghosts within 1 tile of the target, and if it is not a closed tile (has less than 3 walls around it).
-* If true, return the direction to it.
-* Else, for each side around us, check if it has no ghosts within 1 tile, if it's not a closed tile, not the entrance to the ghost house, and if it's sum of distances from the closest ghost is the highest yet.
-* If true make it our escape tile.
-* Return the best escape tile.
+* For each ghost it calculates the distance in a straight line. 
+* If it's less then the max chase distance and less than the current ghost and this ghost is not in the ghost house, choose this ghost.
+* If no ghost was selected return 0.
+* Else make a temporary map that puts an obstacle value on top of the big fruits (to not waste them).
+* Calculate the shortest path to that ghost using the BFS algorithm with the `shortestPath()` function.
+  
+<br></br>
+### Result
+<br></br>
+Result of running level 4 on 100 milliseconds per frame:
+<br></br>
+`316560499, 4, 12487, 0, 353, 1767640452092, 10, -915428924, -25315164343659`
+<br></br>
+Result of running level 4 on 200 milliseconds per frame:
+<br></br>
+`316560499, 4, 6480, 0, 360, 1767640553415, 4, -915428924, -1369122087090259`
+<br></br>
+
+
+
 
 <br></br>
-### Ex2_GUI
-#### Description
-This class is responsible for drawing the map and interface to interact with, using StdDraw.
+## Server Implementation
+### Description
+This is the second part of the project that implements the server side of the game.
+
+The server side structure is as follows:
+* The `Game` class is the main part that includes all the functions needed to run the game. It implements the `IGame` interface.
+* The `Game` class has 2 private subclasses `Ghost` and `GameMap`
+* The `Ghost` class is responsible for the functions and path finding of the ghosts in the game. It implements the `IGhost` interface
+* The `GameMap` class is responsible for creating and editing the game map for each level.
+* The `PointInt2D` class is a structure representing a point in 2D space.
+
 <br></br>
 
 #### Main Functions
@@ -158,30 +155,4 @@ This class is responsible for drawing the map and interface to interact with, us
 <br></br>
 
 
-#### Running Ex2_GUI
-
-<br></br>
-  <img width="514" height="568" alt="image" src="https://github.com/user-attachments/assets/10a2f493-e7aa-45a1-9754-fe4ffc60a70e" />
-  <br></br>
-    <p>
-    this image shows the first screen of the program. you can move between screens with '1-4'. In this screen you are the blue circle and you are running from the red circle, which is using the shortest path algorithm to find you.
-    </p>
-    <br></br>
-    <img width="513" height="567" alt="image" src="https://github.com/user-attachments/assets/755951ef-7115-45c1-b9ee-dcd0ed498c8b" />
-    <br></br>
-    <p>  
-    this image shows the second screen. In this screen you are the blue circle and you are running from the red circle, which is using the shortest path algorithm to find you. in this screen you also have an obstacle in the center.
-    </p>
-    <br></br>
-    <img width="514" height="566" alt="image" src="https://github.com/user-attachments/assets/6853ffdc-b865-477f-8c4f-86b669e33e63" />
-    <br></br>
-    <p>
-    this image shows the third screen. In this screen you are the blue circle and you are running from the red circle, which is using the shortest path algorithm to find you. in this screen you are inside a maze and you have yellow points to collect.
-    </p>  
-    <br></br><br></br>
-    <img width="510" height="564" alt="image" src="https://github.com/user-attachments/assets/fd9701c1-082a-45db-8d01-52054b3442a5" />
-    <br></br>
-    <p>
-    this image shows the fourth screen. In this screen you are the blue circle and you are running from the red circle, which is using the shortest path algorithm to find you. in this screen the map is cyclic.
-    </p>
 

@@ -5,7 +5,7 @@ import ServerSide.IGhost;
 
 import java.util.ArrayList;
 
-public class PacmanAlgo
+public class PacmanAutoAlgo implements ServerSide.PacmanAlgo
 {
     private final ArrayList<Pixel2D> _waypoints;
     private Pixel2D _pos;
@@ -21,7 +21,7 @@ public class PacmanAlgo
             Game.BIG_FRUIT_VALUE       // Big Fruit
     };
 
-    public PacmanAlgo()
+    public PacmanAutoAlgo()
     {
         _map = new Map();
         _waypoints = new ArrayList<>();

@@ -1,10 +1,7 @@
 package ClientSide;
 
 import ServerSide.Game;
-import ServerSide.IGame;
-import ServerSide.StdDraw;
-
-import java.util.ArrayList;
+import ServerSide.PacmanAlgo;
 
 //import exe.ex3.game.Game;
 //import exe.ex3.game.PacManAlgo;
@@ -19,6 +16,7 @@ public class GameMain
     public static void play()
     {
         Game game = new Game(GameInfo._DT);
-        game.startGame();   //new Game(level);
+        PacmanAlgo man = new PacmanAutoAlgo();
+        game.startGame(man);   //new Game(level);
     }
 }

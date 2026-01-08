@@ -1,6 +1,6 @@
 package ServerSide;
 
-import ClientSide.PacmanAlgo;
+import ClientSide.PacmanAutoAlgo;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -180,9 +180,8 @@ public class Game implements IGame
         return ghosts;
     }
 
-    public void startGame()
+    public void startGame(PacmanAlgo man)
     {
-        PacmanAlgo man = new PacmanAlgo();
         while(_gameStatus != IGame.DONE)
         {
             processInput();
@@ -437,7 +436,6 @@ public class Game implements IGame
 
     private void drawInfo()
     {
-        System.out.println(_ghosts[0].remainTimeAsEatable());
         double infoHeight = (double) INFO_Y_HEIGHT / (((double) CANVAS_HEIGHT - (double) INFO_Y_HEIGHT) / Y_Scale);
         StdDraw.setPenColor(StdDraw.BLACK);
         StdDraw.filledRectangle(X_Scale / 2, Y_Scale + infoHeight / 2, X_Scale / 2, infoHeight / 2);

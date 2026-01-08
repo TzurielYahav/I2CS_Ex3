@@ -11,11 +11,11 @@ import java.awt.Font;
 
 public class Game implements IGame
 {
-    private PointInt2D SP_TOP_LEFT;
-    private PointInt2D SP_TOP_RIGHT;
-    private PointInt2D SP_BOTTOM_LEFT;
-    private PointInt2D SP_BOTTOM_RIGHT;
-    private PointInt2D SP_CENTER;
+    private PointInt2D SP_TOP_LEFT;     // Scatter pos top left
+    private PointInt2D SP_TOP_RIGHT;    // Scatter pos top irght
+    private PointInt2D SP_BOTTOM_LEFT;  // Scatter pos bottom left
+    private PointInt2D SP_BOTTOM_RIGHT; // Scatter pos bottom right
+    private PointInt2D SP_CENTER;       // Spawn point
     private PointInt2D OUT_OF_GATE = new PointInt2D(11,14);
     private int _gameStatus;
     private int _score;
@@ -180,6 +180,10 @@ public class Game implements IGame
         return ghosts;
     }
 
+    /**
+     * This function starts the game loop
+     * @param man The algorithm to move pacman
+     */
     public void startGame(PacmanAlgo man)
     {
         while(_gameStatus != IGame.DONE)
@@ -193,6 +197,9 @@ public class Game implements IGame
         }
     }
 
+    /**
+     * This function pauses and unpauses the game
+     */
     public void pause()
     {
         if (_gameStatus == IGame.PLAY)
@@ -201,6 +208,9 @@ public class Game implements IGame
             _gameStatus = IGame.PLAY;
     }
 
+    /**
+     * This function starts the first level from the menu, and starts the level when in the level
+     */
     public void play()
     {
         if (_inMenu)
@@ -217,6 +227,9 @@ public class Game implements IGame
         }
     }
 
+    /**
+     * Exits the level back to the menu
+     */
     public void exit()
     {
         end();
@@ -225,6 +238,9 @@ public class Game implements IGame
         StdDraw.setYscale(0,1);
     }
 
+    /**
+     * Ends the level, shows the 'game over' window and saves the score
+     */
     public void end()
     {
         _gameStatus = GAME_OVER;
@@ -237,19 +253,33 @@ public class Game implements IGame
         StdDraw.text(X_Scale / 2, Y_Scale / 2 - (Y_Scale / 8), "Score  " + _score + "  HighScore  " + _highScore);
     }
 
+    /**
+     * Does the frame update,
+     * If in menu it does the menu animation
+     * If in level, it does the frame with order of:
+     * draw UI
+     * move player
+     * draw player
+     * check for collision
+     * move ghosts
+     * draw ghosts
+     * check for collision
+     * @param direction
+     */
     public void move(int direction)
     {
-        if (_inMenu)
+        if (_inMenu)    // Menu animation
         {
             StdDraw.pause(1000);
             drawMenu();
         }
         if (_gameStatus != IGame.PLAY)
             return;
+
         long currentTimeMillis = System.currentTimeMillis();
         long elapsedFrameTimeMillis = (currentTimeMillis - _lastFrameTime) / _dt;
 
-        if (elapsedFrameTimeMillis > 1)
+        if (elapsedFrameTimeMillis > 1) //current frame
         {
             _lastFrameTime = currentTimeMillis;
 
@@ -279,31 +309,41 @@ public class Game implements IGame
 
     /// ============== private functions ==============
 
+    /**
+     * moves the ghosts
+     */
     private void moveGhosts()
     {
-        int _ghostStartTime = 1000;
+        int _ghostStartTime = 1000; // gives the ghosts delay before starting to move at the beginning of the level
         if (_ghosts[0]._status == INIT && System.currentTimeMillis() - _gameStartTime > _ghostStartTime)
             for (Ghost ghost : _ghosts) ghost.setActive();
         if (_ghosts[0]._status == INIT)
             return;
-        ghostCheckScatter();
+        ghostCheckScatter();    // checks if the ghosts should move to scatter mode (scatter mode is a part of the original game logic as can be seen in YouTube)
         for (Ghost ghost : _ghosts)
         {
             ghost.move();
         }
     }
 
+    /**
+     * Checks for collision between the player and ghosts,
+     * it has 2 outcomes:
+     * 1. player looses
+     * 2. ghost is eaten
+     */
     private void checkCollisionByGhosts()
     {
         for (Ghost ghost : _ghosts)
         {
-            if (ghost._pos.equals(_playerPos))
+            if (ghost._pos.equals(_playerPos))  // player and ghost are in the same position
             {
-                if (ghost.isEatable())
+                if (ghost.isEatable())  // ghost is eatable
                 {
-                    if (ghost._status != IGhost.FLEE)
+                    if (ghost._status != IGhost.FLEE)   // ghost is not already eaten and on the way back to base
                     {
-                        ghost.setFleeing();
+                        ghost.setFleeing();             // make the ghost flee back to base
+                        // ======== calculate score ========
                         if (ghost._type == IGhost.TYPE_STUPID)
                         {
                             _score += STUPID_GHOST_SCORE;
@@ -327,24 +367,23 @@ public class Game implements IGame
                     }
                 }
                 else
-                    end();
+                    end();      // player looses
             }
         }
     }
-    
+
+    /**
+     * Moves the player,
+     *
+     * @param direction The direction to move
+     */
     private void movePlayer(int direction)
     {
-        if (_playerDelayCount != PLAYER_MOVE_DELAY)
-        {
-            _playerDelayCount++;
-            return;
-        }
-        else
-            _playerDelayCount = 0;
-        if (direction > 4 || direction < 0)
+        if (direction > 4 || direction < 0) // if direction is not valid don't move
             direction = 0;
         if (direction != 0)
         {
+            // the 4 neighbors of the current position
             PointInt2D[] directions = {
                     new PointInt2D(),
                     new PointInt2D(_playerPos.getX(), _playerPos.getY() + 1),
@@ -352,40 +391,50 @@ public class Game implements IGame
                     new PointInt2D(_playerPos.getX(), _playerPos.getY() - 1),
                     new PointInt2D(_playerPos.getX() + 1, _playerPos.getY()),
             };
-            PointInt2D newPos = _map.pixelToBounds(directions[direction]);
-            if (_map.isInside(newPos))
+            PointInt2D newPos = _map.pixelToBounds(directions[direction]);  // fix the new pos back to map if the map is cyclic
+            if (_map.isInside(newPos))                                      // if the new pos is inside the map
             {
                 _playerLastPos = new PointInt2D(_playerPos);
-                if (_map.getPixel(newPos) != OBSTACLE_VALUE)
+                if (_map.getPixel(newPos) != OBSTACLE_VALUE)                // if there is no obstacle in the new pos
                     _playerPos = newPos;
                 _playerDirection = direction;
             }
         }
-        hasEatenFruit();
+        hasEatenFruit();                                                    // check if a fruit should be eaten
     }
 
+    /**
+     * Check if a small or big fruit has been eaten and add score,
+     * make the ghosts confused if a big fruit was eaten
+     */
     private void hasEatenFruit()
     {
         if (_map.getPixel(_playerPos) == FRUIT_VALUE)
         {
             _map.setPixel(_playerPos, FLOOR_VALUE);
             _score += FRUIT_SCORE;
-            checkVictory();
+            checkVictory();                         // check if we won the game
         }
         else if (_map.getPixel(_playerPos) == BIG_FRUIT_VALUE)
         {
             _map.setPixel(_playerPos, FLOOR_VALUE);
             _score += BIG_FRUIT_SCORE;
-            canEatGhosts();
-            checkVictory();
+            canEatGhosts();                         // make the ghosts eatable
+            checkVictory();                         // check if we won the game
         }
     }
 
+    /**
+     * make the ghosts eatable
+     */
     private void canEatGhosts()
     {
         for (Ghost ghost : _ghosts) ghost.setEatable();
     }
 
+    /**
+     * check if there are no fruits on the map
+     */
     private void checkVictory()
     {
         if (!_map.hasColors(new int[] {FRUIT_VALUE, BIG_FRUIT_VALUE}))
@@ -394,6 +443,9 @@ public class Game implements IGame
         }
     }
 
+    /**
+     * make the ghosts go to scatter mode
+     */
     private void ghostSetScatter()
     {
         _ghostScatterCounter = System.currentTimeMillis();
@@ -401,6 +453,9 @@ public class Game implements IGame
             ghost.setScatter();
     }
 
+    /**
+     * make the ghosts enter chase mode
+     */
     private void ghostSetActive()
     {
         _ghostScatterCounter = System.currentTimeMillis();
@@ -408,6 +463,9 @@ public class Game implements IGame
             ghost.setActive();
     }
 
+    /**
+     * check if the ghosts should enter scatter mode or exit scatter mode. (scatter mode is from the original game, can be seen in YouTube)
+     */
     private void ghostCheckScatter()
     {
         if (_ghosts[0]._status == IGhost.SCATTER)
@@ -431,6 +489,9 @@ public class Game implements IGame
         drawUpdate();
     }
 
+    /**
+     * Draw the UI at the top of the screen
+     */
     private void drawInfo()
     {
         double infoHeight = (double) INFO_Y_HEIGHT / (((double) CANVAS_HEIGHT - (double) INFO_Y_HEIGHT) / Y_Scale);
@@ -443,6 +504,9 @@ public class Game implements IGame
         StdDraw.text(X_Scale / 2, Y_Scale + infoHeight / 4, "Level " + (_level / 3 + 1) + "  Difficulty " + (_level % 3 + 1) + "  |  SCORE  " + _score + "  |  Ghosts Eatable Time  " + (_ghosts[0].remainTimeAsEatable() > 0 ? _ghosts[0].remainTimeAsEatable() : 0));
     }
 
+    /**
+     * Draw each cell of the map
+     */
     private void drawMap()
     {
         for (int y = 0; y < _map.getHeight(); y++)
@@ -454,6 +518,11 @@ public class Game implements IGame
         }
     }
 
+    /**
+     * Draw the score when eating a ghost. The score is drawn at the tile of the ghost
+     * @param pos The position to draw
+     * @param score The score to draw
+     */
     private void drawScore(PointInt2D pos, int score)
     {
         double cellScale = X_Scale / (_map.getWidth() * 2);
@@ -465,6 +534,10 @@ public class Game implements IGame
         StdDraw.text(x, y, String.valueOf(score));
     }
 
+    /**
+     * Draw a map cell according to the map value
+     * @param pos The position to draw
+     */
     private void drawCell(PointInt2D pos)
     {
         double cellScale = X_Scale / (_map.getWidth() * 2);
@@ -492,27 +565,36 @@ public class Game implements IGame
         drawGhosts();
     }
 
+    /**
+     * Draw the ghosts, first draw the ghost at the new position, then erase the ghost from the last position
+     */
     private void drawGhosts()
     {
-        for (Ghost ghost : _ghosts)
-        {
-            drawCell(ghost.getPrevPos());
-        }
-        for (Ghost ghost : _ghosts)
+
+        for (Ghost ghost : _ghosts)     // draw ghosts
         {
             double cellScale = X_Scale / (_map.getWidth() * 2);
             double imageScale = X_Scale / (_map.getWidth() * 1.5);
             String image;
+            // find the ghost state
             if (ghost._status == IGhost.FLEE)
                 image = ghostImages[1];
             else if (ghost._status == IGhost.CONFUSED)
                 image = ghostImages[0];
             else
                 image = ghostImages[(ghost._type + 2) + ((Math.max(0,ghost._dir - 1)) * IGhost.AMOUNT_OF_TYPES)];
+
             StdDraw.picture(ghost.getPointPos().getX() + cellScale, ghost.getPointPos().getY() + cellScale, image, imageScale, imageScale);
+        }
+        for (Ghost ghost : _ghosts)     // erase last position
+        {
+            drawCell(ghost.getPrevPos());
         }
     }
 
+    /**
+     * draw the player, first erase the player from the last position, then draw the player at the new position
+     */
     private void drawPlayer()
     {
         drawCell(new PointInt2D(_playerLastPos.getX(), _playerLastPos.getY()));
@@ -521,14 +603,17 @@ public class Game implements IGame
         StdDraw.picture(_playerPos.getX() + cellScale, _playerPos.getY() + cellScale, PLAYER_IMG, imageScale, imageScale, _playerDirection * 90);
     }
 
+    /**
+     * draw the image menu according to the animation and high score
+     */
     private void drawMenu()
     {
-        if (_menuAnimation)
+        if (_menuAnimation)     // first animation image
         {
             StdDraw.picture(X_Scale / (_map.getWidth() * 2), Y_Scale / (_map.getHeight() * 2), MENU_IMG, X_Scale / _map.getWidth(), Y_Scale / _map.getHeight());
             _menuAnimation = false;
         }
-        else
+        else                    // second animation image
         {
             StdDraw.picture(X_Scale / (_map.getWidth() * 2), Y_Scale / (_map.getHeight() * 2), MENU_IMG2, X_Scale / _map.getWidth(), Y_Scale / _map.getHeight());
             _menuAnimation = true;
@@ -538,6 +623,11 @@ public class Game implements IGame
         StdDraw.text(0.5, 0.4, "HighScore  " + _highScore);
     }
 
+    /**
+     * change level, if the level is not valid select the first or last one,
+     * init the level vars
+     * @param level The level to init
+     */
     public void changeLevel(int level)
     {
         if (level < 0)
@@ -554,6 +644,10 @@ public class Game implements IGame
         drawGame();
     }
 
+    /**
+     * init a new level,
+     * first make the map, then the map positions, then the ghosts
+     */
     private void createLevel()
     {
         if (_level == 0 || _level == 1 || _level == 2)
@@ -713,6 +807,7 @@ public class Game implements IGame
 
     /**
      * =========== GAMEMAP ============
+     * The class holding the function of the level map
      */
     private class GameMap
     {
@@ -1013,6 +1108,7 @@ public class Game implements IGame
 
     /**
      * ============ GHOST ============
+     * The class responsible for the algorithm of the ghosts
      */
     private class Ghost implements IGhost
     {
@@ -1023,8 +1119,8 @@ public class Game implements IGame
         private long _lastGreen = 0;
         private int _status;
         private int _dir = 1;
-        private static int _delay = 0;
-        private boolean _didTurn180 = false;
+        private static int _delay = 0;          // the amount of frames they skip to be slower than the player
+        private boolean _didTurn180 = false;    // every time a ghosts changes status they turn 180 degrees
 
         Ghost(PointInt2D pos, int type)
         {
@@ -1045,11 +1141,6 @@ public class Game implements IGame
                 _scatterPos = SP_BOTTOM_LEFT;
             else
                 _scatterPos = SP_BOTTOM_RIGHT;
-        }
-
-        Ghost(Ghost ghost)
-        {
-            this(ghost.getPointPos(), ghost.getType());
         }
 
         public String getPos()
@@ -1141,6 +1232,13 @@ public class Game implements IGame
             _delay++;
         }
 
+        /**
+         * the function for moving the ghosts according to status.
+         * FLEE - move back to base after being eaten
+         * CONFUSED - move randomly in eatable state
+         * SCATTER - move to the assigned scatter point
+         * this function is overridden in the child classes
+         */
         public void move()
         {
             if (_status == FLEE)
@@ -1150,17 +1248,21 @@ public class Game implements IGame
                 if (isEatable())
                     moveConfused();
                 else
-                    setActive();
+                    setActive();    // if the ghost was eaten already and its back at base return to chase mode
             }
             else if (_status == SCATTER)
             {
-                if (getPointPos().distance2D(BASE) <= 1)
+                if (getPointPos().distance2D(BASE) <= 1)            // if it's inside the base go out
                     moveToDirection(coloredGhostMove(OUT_OF_GATE));
-                else
+                else                                                // if it's out of base move to scatter point
                     moveToDirection(coloredGhostMove(_scatterPos));
             }
         }
 
+        /**
+         * move the ghost to the given direction
+         * @param direction The direction to move to
+         */
         private void moveToDirection(int direction)
         {
             if (direction != 0)
@@ -1173,7 +1275,7 @@ public class Game implements IGame
                         new PointInt2D(_pos.getX() + 1, _pos.getY()),
                 };
                 PointInt2D newPos = _map.pixelToBounds(directions[direction]);
-                if (_map.isInside(newPos) && _map.getPixel(newPos) != OBSTACLE_VALUE)
+                if (_map.isInside(newPos) && _map.getPixel(newPos) != OBSTACLE_VALUE)   // check if its in the map and if its not an obstacle
                 {
                     _dir = direction;
                     _prevPos = new PointInt2D(_pos);
@@ -1182,9 +1284,14 @@ public class Game implements IGame
             }
         }
 
+        /**
+         * if the ghost is in flee mode, run back to base
+         * first it does a 180 turn,
+         * then it goes according to the original pacman algorithm, as can be seen in YouTube.
+         */
         public void moveToBase()
         {
-            if (_didTurn180)
+            if (_didTurn180)    // if it did turn 180 already
             {
                 PointInt2D target = BASE;
                 double distToBase = Double.MAX_VALUE;
@@ -1197,32 +1304,31 @@ public class Game implements IGame
                 };
                 for (int i = 1; i < 5; i++)
                 {
-                    if (i % 4 != (_dir + 2) % 4)
+                    if (i % 4 != (_dir + 2) % 4)    // this checks that the current direction is not the one we came from because the ghosts cant turn back.
                     {
-                        PointInt2D p = _map.pixelToBounds(directions[i]);
-                        if (_map.getPixel(p) != OBSTACLE_VALUE && p.distance2D(BASE) < distToBase)
+                        PointInt2D p = _map.pixelToBounds(directions[i]);   // make sure the new pixel is in bounds when the map is cyclic
+                        if (_map.getPixel(p) != OBSTACLE_VALUE && p.distance2D(BASE) < distToBase)  // if this direction is not an obstacle and it brings us closer to base
                         {
                             target = p;
                             distToBase = p.distance2D(BASE);
                         }
                     }
                 }
-                if (target.equals(_pos))
+                if (target.equals(_pos))    // if we didnt find a direction we are stuck and have to turn back
                     moveToDirection(turn180());
                 else
                     moveToDirection(getDirectionFromPoint(target));
             }
             else
-                moveToDirection(turn180());
+                moveToDirection(turn180()); // do a turn back if didnt already
             if (_pos.equals(BASE))
             {
-                if (remainTimeAsEatable() > 0)
+                if (remainTimeAsEatable() > 0)  // if we are back to base and the eatable timer is still on
                     setConfused();
                 else
                     setActive();
             }
         }
-
 
         public void moveConfused()
         {

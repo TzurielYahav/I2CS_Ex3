@@ -17,7 +17,6 @@ public class Game implements IGame
     private int _level = 1;
     private long _gameStartTime;
     private long _lastFrameTime = 0;
-    private long _lag = 0L;
     private long _ghostScatterCounter = 0;
     private int _dt;
     private double Y_Scale;
@@ -85,13 +84,6 @@ public class Game implements IGame
         _manualMode = !_manualMode;
     }
 
-    public Character getKeyChar()
-    {
-        if (StdDraw.hasNextKeyTyped())
-            return StdDraw.nextKeyTyped();
-        return null;
-    }
-
     private void processInput()
     {
         while (StdDraw.hasNextKeyTyped())
@@ -103,7 +95,9 @@ public class Game implements IGame
                 return;
             }
             if (character == 'q')
-                end(2);
+                exit();
+            if (character == 'p')
+                pause();
             if (character == 'm')
                 changeGameMode();
             if (character == 'h')
@@ -146,11 +140,19 @@ public class Game implements IGame
         }
     }
 
+    public void pause()
+    {
+        if (_gameStatus == IGame.PLAY)
+            _gameStatus = IGame.PAUSE;
+        else if (_gameStatus == IGame.PAUSE)
+            _gameStatus = IGame.PLAY;
+    }
+
     public void play()
     {
         if (_inMenu)
         {
-            drawGame();
+            changeLevel(_level);
             _inMenu = false;
         }
         else
@@ -162,9 +164,17 @@ public class Game implements IGame
         }
     }
 
+    public void exit()
+    {
+        _gameStatus = GAME_OVER;
+        _inMenu = true;
+        StdDraw.setXscale(0,1);
+        StdDraw.setYscale(0,1);
+    }
+
     public void end(int status)
     {
-        _gameStatus = IGame.DONE;
+        _gameStatus = GAME_OVER;
         StdDraw.picture(X_Scale / 2, Y_Scale / 2, GAMEOVER_IMG, X_Scale / 2, X_Scale / 3);
         StdDraw.setPenColor(StdDraw.WHITE);
         StdDraw.setPenRadius(1);
@@ -340,7 +350,6 @@ public class Game implements IGame
         double infoHeight = (double) INFO_Y_HEIGHT / (((double) CANVAS_HEIGHT - (double) INFO_Y_HEIGHT) / Y_Scale);
         StdDraw.setXscale(0,X_Scale);
         StdDraw.setYscale(0,Y_Scale + infoHeight);
-        StdDraw.clear();
         drawMap();
         drawUpdate();
     }

@@ -8,6 +8,7 @@ public interface IGame
     int PLAY = 1;
     int PAUSE = 2;
     int DONE = 3;
+    int GAME_OVER = 4;
     int ERR = -1;
     int STAY = 0;
     int UP = 1;

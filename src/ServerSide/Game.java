@@ -2,7 +2,11 @@ package ServerSide;
 
 import ClientSide.PacmanAlgo;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Game implements IGame
 {
@@ -14,7 +18,7 @@ public class Game implements IGame
     private PointInt2D OUT_OF_GATE = new PointInt2D(11,14);
     private int _gameStatus;
     private int _score;
-    private int _highScore;
+    private int _highScore = 0;
     private int _level = 1;
     private long _gameStartTime;
     private long _lastFrameTime = 0;
@@ -58,11 +62,61 @@ public class Game implements IGame
 
         createLevel();
 
+        try
+        {
+            loadScore(SAVE_FILE);
+        }
+        catch(Exception e)
+        {
+            saveScore(SAVE_FILE);
+        }
         // ====== Canvas Init ======
         StdDraw.setCanvasSize(CANVAS_WIDTH, CANVAS_HEIGHT);
 
-        // =======================================
+        // =========================
         drawMenu();
+    }
+
+    /**
+     * Loads a map from a txt file
+     * @param saveFileName The file to load from
+     */
+    public void loadScore(String saveFileName) throws FileNotFoundException
+    {
+        try
+        {
+            File myFile = new File(saveFileName);
+            Scanner myReader = new Scanner(myFile);
+            ArrayList<String[]> rowList = new ArrayList<>();
+            if (myReader.hasNextLine())
+            {
+                String data = myReader.nextLine();
+                _highScore = Integer.parseInt(data);
+            }
+            myReader.close();
+        }
+        catch(Exception e)
+        {
+            throw new FileNotFoundException(saveFileName + " not found");
+        }
+    }
+
+    /**
+     * Saves the map into a txt file
+     * @param saveFileName The name of the file to save into
+     */
+    public void saveScore(String saveFileName)
+    {
+        try
+        {
+            FileWriter myWriter = new FileWriter(saveFileName);
+            myWriter.write(_highScore);
+            myWriter.close();
+        }
+        catch(Exception e)
+        {
+            throw new RuntimeException(saveFileName + " could not be saved");
+        }
     }
 
     public int getStatus()
@@ -166,7 +220,7 @@ public class Game implements IGame
 
     public void exit()
     {
-        _gameStatus = GAME_OVER;
+        end();
         _inMenu = true;
         StdDraw.setXscale(0,1);
         StdDraw.setYscale(0,1);
@@ -177,6 +231,7 @@ public class Game implements IGame
         _gameStatus = GAME_OVER;
         if (_score > _highScore)
             _highScore = _score;
+        saveScore(SAVE_FILE);
         StdDraw.picture(X_Scale / 2, Y_Scale / 2, GAMEOVER_IMG, X_Scale / 2, X_Scale / 3);
         StdDraw.setPenColor(StdDraw.WHITE);
         StdDraw.setPenRadius(1);

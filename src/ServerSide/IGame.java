@@ -65,4 +65,5 @@ public interface IGame
     int INFO_Y_HEIGHT = 50;
     int CANVAS_WIDTH = 800;
     int CANVAS_HEIGHT = CANVAS_WIDTH + INFO_Y_HEIGHT;
+    String SAVE_FILE = "SAVE_FILE.txt";
 }

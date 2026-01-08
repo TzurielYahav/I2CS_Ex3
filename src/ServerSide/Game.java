@@ -15,6 +15,7 @@ public class Game implements IGame
     private int _level = 1;
     private long _gameStartTime;
     private long _lastFrameTime = 0;
+    private long _lag = 0L;
     private long _ghostScatterCounter = 0;
     private int _dt;
     private double Y_Scale;
@@ -132,8 +133,7 @@ public class Game implements IGame
         long currentTimeMillis = System.currentTimeMillis();
         long elapsedFrameTimeMillis = (currentTimeMillis - _lastFrameTime) / _dt;
 
-        if (elapsedFrameTimeMillis > 1)
-        {
+        if (elapsedFrameTimeMillis > 1) {
             System.out.println("Moving " + direction);
 
             _lastFrameTime = currentTimeMillis;
@@ -150,11 +150,32 @@ public class Game implements IGame
 
             drawUpdate();
             checkEatenByGhosts();
-
+        }
             // ========= Check victory ========
 
-
-        }
+//        long currentTime = System.currentTimeMillis();
+//        long elapsedTime = currentTime - _lastFrameTime;
+//        _lastFrameTime = currentTime;
+//        _lag += elapsedTime;
+//
+//        while (_lag >= _dt)
+//        {
+//            _lag -= _dt;
+//            // ========= Player ========
+//            movePlayer(direction);
+//
+//            // ========= Ghost ========
+//            moveGhosts();
+//            if (Ghost._delay == IGhost.MOVE_DELAY)
+//                Ghost.resetDelay();
+//            else
+//                Ghost.addDelayCount();
+//
+//            drawUpdate();
+//            checkEatenByGhosts();
+//
+//            // ========= Check victory ========
+//        }
     }
 
     /// ============== private functions ==============

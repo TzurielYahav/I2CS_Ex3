@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 public class GameMain
 {
-    private static Character _cmd;
+    private static int _cmd;
 
     static void main(String[] args) {
         play();
@@ -25,49 +25,50 @@ public class GameMain
         PacmanAlgo man = new PacmanAlgo();
         while(game.getStatus()!= IGame.DONE)
         {
-
-            if (_cmd !=null)
-            {
-                System.out.println(" CMD  " + _cmd);
-                if (_cmd == ' ')
-                    game.play();
-                if (_cmd == 'q') {
-                    game.end(2);}
-                if (_cmd == 'm')
-                    man.changeGameMode();
-                if (_cmd == 'h')
-                    System.out.println("Pacman help: keys: ' '-start, 'w,a,s,d'-directions, all other parameters should be configured via GameInfo.java, ");
-                if (_cmd >= '1' && _cmd <= '9')
-                    game.changeLevel(Character.getNumericValue(_cmd));
-            }
+            processInput(game, man);
             game.move(man.move(game));
-            StdDraw.pause(GameInfo._DT - 20);
+            StdDraw.pause(180);
         }
         System.out.println("Pacman finished.");
 //        game.end();
     }
 
-    public static Character getCMD() {return _cmd;}
-
-    private void processInput(ArrayList<Character> characters, Game game, PacmanAlgo man)
+    public static int getCMD()
     {
-        for (Character character : characters)
+        int cmd = _cmd;
+        _cmd = 0;
+        return cmd;
+    }
+
+    private static void processInput(Game game, PacmanAlgo man)
+    {
+        while (StdDraw.hasNextKeyTyped())
         {
+            char character = StdDraw.nextKeyTyped();
             if (character == ' ')
+            {
                 game.play();
-            if (character == 'q') {
-                game.end(2);}
+                return;
+            }
+            if (character == 'q')
+                game.end(2);
             if (character == 'm')
                 man.changeGameMode();
             if (character == 'h')
                 System.out.println("Pacman help: keys: ' '-start, 'w,a,s,d'-directions, all other parameters should be configured via GameInfo.java, ");
             if (character >= '1' && character <= '9')
+            {
                 game.changeLevel(Character.getNumericValue(character));
-
-            if (character == 'w') {_cmd = Game.UP;}
-            if (character == 's') {_cmd = Game.DOWN;}
-            if (character == 'a') {_cmd = Game.LEFT;}
-            if (character == 'd') {_cmd = Game.RIGHT;}
+                return;
+            }
+            if (_cmd == 0)
+            {
+                if (character == 'w') {_cmd = Game.UP;}
+                if (character == 's') {_cmd = Game.DOWN;}
+                if (character == 'a') {_cmd = Game.LEFT;}
+                if (character == 'd') {_cmd = Game.RIGHT;}
+            }
         }
+
     }
 }

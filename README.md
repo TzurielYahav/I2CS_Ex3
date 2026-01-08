@@ -153,13 +153,16 @@ The server works as follows:
 In order to use the game:
 * Make a main class that will run the game as follows
 
-
+```java
     static void main(String[] args)
     {
         Game game = new Game(GameInfo._DT);
         PacmanAlgo man = new PacmanAutoAlgo();
         game.startGame(man);   //new Game(level);
     }
+```
+
+    
 
 * Make the class `PacmanAutoAlgo` (implementing the `PacmanAlgo` interface), that will be responsible for the Pacman algorithm.
 <br></br>

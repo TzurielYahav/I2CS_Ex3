@@ -14,6 +14,7 @@ public class Game implements IGame
     private PointInt2D OUT_OF_GATE = new PointInt2D(11,14);
     private int _gameStatus;
     private int _score;
+    private int _highScore;
     private int _level = 1;
     private long _gameStartTime;
     private long _lastFrameTime = 0;
@@ -126,7 +127,6 @@ public class Game implements IGame
         return ghosts;
     }
 
-
     public void startGame()
     {
         PacmanAlgo man = new PacmanAlgo();
@@ -172,13 +172,15 @@ public class Game implements IGame
         StdDraw.setYscale(0,1);
     }
 
-    public void end(int status)
+    public void end()
     {
         _gameStatus = GAME_OVER;
+        if (_score > _highScore)
+            _highScore = _score;
         StdDraw.picture(X_Scale / 2, Y_Scale / 2, GAMEOVER_IMG, X_Scale / 2, X_Scale / 3);
         StdDraw.setPenColor(StdDraw.WHITE);
         StdDraw.setPenRadius(1);
-        StdDraw.text(X_Scale / 2, Y_Scale / 2 - (Y_Scale / 8), "Score  " + _score);
+        StdDraw.text(X_Scale / 2, Y_Scale / 2 - (Y_Scale / 8), "Score  " + _score + "  HighScore  " + _highScore);
     }
 
     public void move(int direction)
@@ -250,7 +252,7 @@ public class Game implements IGame
                     }
                 }
                 else
-                    end(0);
+                    end();
             }
         }
     }
@@ -313,7 +315,7 @@ public class Game implements IGame
     {
         if (!_map.hasColors(new int[] {FRUIT_VALUE, BIG_FRUIT_VALUE}))
         {
-            end(1);
+            end();
         }
     }
 

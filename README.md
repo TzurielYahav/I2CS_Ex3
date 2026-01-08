@@ -44,25 +44,80 @@ To use the project: Press 'Space' to start, 'H' for help
 The program will start the Pacman game with the auto algorithm.
 
 <br></br>
-#### The Pacman algorithm
+#### The Algorithm
+The algorithm is built as a state machine that receives the current state of the game,
+ alternates between 3 states and returns the direction that Pacman should go to.
+The three states of the algorithm are:
+* Chase fruits
+* Escape ghosts
+* Chase ghosts
 
-    public int fill(Pixel2D p, int new_v, boolean cyclic);
+The algorithm starts by choosing state with the function
 
- * This function fills an area of connected cells in the map with a new value
+    private int pacmanMoveState()
+
+This function works as follows:
+* Starts with neutral direction 0.
+* Checks if there is enough time left for the ghosts in eatable state.
+* If true we are in chasing mod, and direction is the outcome of the 'Chase ghosts' state.
+* If not or if we didn't find a close ghost to chase, Calculate a path to the nearest fruit avoiding ghosts, using the chaseFruits() function.
+* If we are in chase mode return the direction of the path to the nearest fruit.
+* If not, check if we have to escape first.
+* For each ghost check if it's active,
+* If true calculate the distance from the ghost to every tile using the allDistance() function.
+* If the ghost is too far from us ignore it. If it's close add the distances map to the escape plan (the sum of all the close ghosts distances) and change state to 'Escape ghosts'.
+* After checking all ghosts, if we are in escaping mode call escapeGhosts() function.
+* If not, return the direction from the 'chase fruits' path.
 
 <br></br>
 
-    public Pixel2D[] shortestPath(Pixel2D p1, Pixel2D p2, int obsColor, boolean cyclic);
+    private void chaseFruit(boolean isChasing)
 
- * This function Computes the shortest valid path between p1 and p2, using the BFS algorithm.
- * A valid path between p1 and p2 is defined as an ordered set of pixels where each consecutive pixels in the path are neighbors in this map.
- * a path between p1 and p2 does NOT contain the absColor.
- * Two pixels are neighbors in the map, iff they are a single pixel apart (up,down, left, right).
+This function works as follows:
+ * This function Computes the shortest valid path between from Pacman to the nearest fruit, using the BFS algorithm.
+ * Make a temporary map to use in the calculation of the way.
+ * If we are in chasing mode, we dont want to waste big fruits, so put an obstacle mark on top of them.
+ * If not, we want to avoid ghosts, so put an obstacle mark on top of them.
+ * If there is a lone fruit (that doesn't have other fruits around it) around us, we don't want to miss it because it wastes time so move to this fruit.
+ * If not, calculate the direction to the nearest fruit.
 
 <br></br>
 
-    public Map2D allDistance(Pixel2D start, int obsColor, boolean cyclic);
+    private int escapeGhosts(Map2D escapePlan)
+    {
+        Pixel2D target = null;
+        if (!_waypoints.isEmpty())
+            target = _waypoints.removeFirst();
 
+        int bestRoute = 0;
+        int direction = 0;
+
+        Pixel2D[] sides = new Index2D[4];
+        sides[0] = new Index2D(_pos.getX(), _pos.getY() + 1); // the UP neighbor of the current cell
+        sides[1] = new Index2D(_pos.getX(), _pos.getY() - 1); // the DOWN neighbor of the current cell
+        sides[2] = new Index2D(_pos.getX() - 1, _pos.getY()); // the LEFT neighbor of the current cell
+        sides[3] = new Index2D(_pos.getX() + 1, _pos.getY()); // the RIGHT neighbor of the current cell
+
+        if (target != null && hasNoGhosts(target))
+        {
+            direction = getDirection(target);
+        }
+        else
+        {
+            for (Pixel2D side : sides)
+            {
+                if (bestRoute < escapePlan.getPixel(side) && hasNoGhosts(side) && notInCenter(side))
+                {
+                    bestRoute = escapePlan.getPixel(side);
+                    direction = getDirection(side);
+                }
+            }
+        }
+
+        return direction;
+    }
+
+This function works as follows:
 * This function creates a map in which each cell contains a number that represents the distance from the start cell.
 * To do so this function uses the BFS algorithm
 

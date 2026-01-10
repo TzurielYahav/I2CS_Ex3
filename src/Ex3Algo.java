@@ -40,12 +40,22 @@ public class Ex3Algo implements PacManAlgo
     }
 
 	/**
-	 *  Add a short description for the algorithm as a String.
+	 *  A short description for the algorithm as a String.
 	 */
     @Override
-	public String getInfo() {
-		return null;
-	} // TO DO
+	public String getInfo()
+    {
+		return """
+                The algorithm for Pacman is:
+                
+                 1. Check if Pacman is chasing the ghosts.
+                 1a. If true find the closest ghost within the chase distance and chase it.
+                 1b. If true but there are no ghosts to chase, go to the nearest fruit avoiding big fruits.
+                 2. Otherwise we are eatable, find the way to the nearest fruit avoiding the ghosts.
+                 3. Check if there is a close enough ghost that we should escape it.
+                 3a. If true escape it preferring to escape towards the closest fruit.
+                 3b. Otherwise go to the nearest fruit.""";
+	}
 
 	/**
 	 * This is the main method.

@@ -1,7 +1,5 @@
 package ServerSide;
 
-import ClientSide.PacmanAutoAlgo;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -218,6 +216,14 @@ public class Game implements IGame
             changeLevel(_level);
             _inMenu = false;
         }
+        else if (_gameStatus == IGame.GAME_OVER)
+        {
+            changeLevel(_level);
+            _gameStatus = IGame.PLAY;
+            _gameStartTime = System.currentTimeMillis();
+            _lastFrameTime = System.currentTimeMillis();
+            ghostSetScatter();
+        }
         else
         {
             _gameStatus = IGame.PLAY;
@@ -287,7 +293,7 @@ public class Game implements IGame
             if (_manualMode)
             {
                 direction = _manualCMD;
-                _manualCMD = 0;
+                //-
             }
             drawInfo();
             movePlayer(direction);
@@ -400,6 +406,8 @@ public class Game implements IGame
                 _playerDirection = direction;
             }
         }
+        else
+            _manualCMD = 0;
         hasEatenFruit();                                                    // check if a fruit should be eaten
     }
 
@@ -1330,11 +1338,18 @@ public class Game implements IGame
             }
         }
 
+        /**
+         * this is confused move in which an eatable ghost moves randomly around the maze.
+         * first it does a 180 turn and then move randomly around.
+         * a ghost cant turn back when moving around,
+         * instead each other avalible direction get a random value and the lowest is selected.
+         * if the ghost is within 2 tiles of the player it runs away
+         */
         public void moveConfused()
         {
-            if (_delay == MOVE_DELAY)
+            if (_delay == MOVE_DELAY)   // this move delay makes the ghost move every other frame making it slower
             {
-                if (!_didTurn180)
+                if (!_didTurn180)       // if it didn't yet turn 180 (the first move)
                 {
                     moveToDirection(turn180());
                     return;
@@ -1351,13 +1366,13 @@ public class Game implements IGame
                 };
                 for (int i = 1; i < 5; i++)
                 {
-                    if (i % 4 != (_dir + 2) % 4)
+                    if (i % 4 != (_dir + 2) % 4)    // checks if this is not turning around
                     {
                         PointInt2D p = _map.pixelToBounds(directions[i]);
                         double rand =  Math.random();
-                        if (_map.getPixel(p) != OBSTACLE_VALUE && rand < bestOption)
+                        if (_map.getPixel(p) != OBSTACLE_VALUE && rand < bestOption)    // checks if this direction is not a wall and if its random value is lower than the current selection
                         {
-                            if ((distToPlayer <= 2 && p.distance2D(_playerPos) >= 2) || distToPlayer > 2)
+                            if ((distToPlayer <= 2 && p.distance2D(_playerPos) >= 2) || distToPlayer > 2)   // checks if the distance to the player is more than 2 OR (dist to player is less than 2 and the direction increases the distance)
                             {
                                 target = p;
                                 bestOption = rand;
@@ -1365,22 +1380,32 @@ public class Game implements IGame
                         }
                     }
                 }
-                if (target.equals(_pos))
+                if (target.equals(_pos))    // if we have nowhere to go and we are stuck
                     moveToDirection(turn180());
                 else
                     moveToDirection(getDirectionFromPoint(target));
             }
         }
 
+        /**
+         * the chase mode movement function of the colored ghosts from the original game.
+         * when a ghost first enters chase mode it does a 180 turn,
+         * the nit moves according to the rules:
+         * 1. it cant turn back
+         * 2. it cant go inside the base
+         * 3. it checks which direction will bring it closer to the aimpoint in 2d straight line distance
+         * @param aimPoint
+         * @return
+         */
         public int coloredGhostMove(PointInt2D aimPoint)
         {
             if (_delay == MOVE_DELAY)
             {
-                if (!_didTurn180)
+                if (!_didTurn180)   // if didnt do a 180 turn
                     return turn180();
 
                 PointInt2D target = new PointInt2D(_pos);
-                double distToPlayer = Double.MAX_VALUE;
+                double distToAimPoint = Double.MAX_VALUE;
                 PointInt2D[] directions = {
                         new PointInt2D(),
                         new PointInt2D(_pos.getX(), _pos.getY() + 1),
@@ -1390,13 +1415,13 @@ public class Game implements IGame
                 };
                 for (int i = 1; i < 5; i++)
                 {
-                    if (i % 4 != (_dir + 2) % 4)
+                    if (i % 4 != (_dir + 2) % 4)        // check if this is not back direction
                     {
                         PointInt2D p = _map.pixelToBounds(directions[i]);
-                        if (_map.getPixel(p) != OBSTACLE_VALUE && p.distance2D(aimPoint) < distToPlayer && (!_pos.equals(OUT_OF_GATE) || !p.equals(new PointInt2D(11, 13))))
-                        {
+                        if (_map.getPixel(p) != OBSTACLE_VALUE && p.distance2D(aimPoint) < distToAimPoint && (!_pos.equals(OUT_OF_GATE) || !p.equals(new PointInt2D(11, 13))))
+                        {   // check if this is not a wall and is the distance to the aimpoint is the smallest yet, and it is not going inside the gate
                             target = p;
-                            distToPlayer = p.distance2D(aimPoint);
+                            distToAimPoint = p.distance2D(aimPoint);
                         }
                     }
                 }
@@ -1405,32 +1430,23 @@ public class Game implements IGame
             return 0;
         }
 
+        /**
+         * get a direction out of the difference between the current position and the given point
+         * @param dir The target point
+         * @return The direction between the points
+         */
         private int getDirectionFromPoint(PointInt2D dir)
         {
-            if (dir.getX() > _pos.getX())
+            if (dir.getX() != _pos.getX())
             {
-                if (dir.getX() - 1 > _pos.getX())
-                    return exe.ex3.game.Game.LEFT;
-                else
-                    return exe.ex3.game.Game.RIGHT;
-            }
-            else if (dir.getX() < _pos.getX())
-            {
-                if (dir.getX() + 1 < _pos.getX())
+                if (dir.getX() > _pos.getX())
                     return exe.ex3.game.Game.RIGHT;
                 else
                     return exe.ex3.game.Game.LEFT;
             }
-            else if (dir.getY() > _pos.getY())
+            else if (dir.getY() != _pos.getY())
             {
-                if (dir.getY() - 1 > _pos.getY())
-                    return exe.ex3.game.Game.DOWN;
-                else
-                    return exe.ex3.game.Game.UP;
-            }
-            else if (dir.getY() < _pos.getY())
-            {
-                if (dir.getY() + 1 < _pos.getY())
+                if (dir.getY() > _pos.getY())
                     return exe.ex3.game.Game.UP;
                 else
                     return exe.ex3.game.Game.DOWN;
@@ -1439,10 +1455,14 @@ public class Game implements IGame
                 return 0;
         }
 
+        /**
+         * get the back direction of the current direction
+         * @return
+         */
         private int turn180()
         {
             _didTurn180 = true;
-            int dir = (_dir + 2) % 4;
+            int dir = (_dir + 2) % 4;   // get the back direction of the current direction
             if (dir == 0)
                 dir = 4;
             return dir;
@@ -1474,6 +1494,11 @@ public class Game implements IGame
             }
         }
 
+        /**
+         * The stupid ghost algorithm
+         * same as the confused function just without running away from the player when close
+         * @return The direction to go
+         */
         private int stupidAlgo()
         {
             if (Ghost._delay == MOVE_DELAY)
@@ -1536,6 +1561,11 @@ public class Game implements IGame
                 super.moveToDirection(followPlayer());
         }
 
+        /**
+         * THis is the smart ghost algorithm,
+         * it uses BFS to find the way to the player
+         * @return The direction to go
+         */
         private int followPlayer()
         {
             if (smartDelay == 1)
@@ -1616,9 +1646,16 @@ public class Game implements IGame
             return coloredGhostMove(findAimPoint());
         }
 
+        /**
+         * This is the function that finds the original blue ghost aimpoint, it is explained in YouTube video about the original game.
+         * the aimpoint is calculated by finding a point 2 tiles ahead of pacman, calculating the angle to the red ghost,
+         * and turning this angle by 180 with the same distance. this is the blue aimpoint, making it go in front of pacman.
+         * if there are no reds the point 2 tiles ahead is selected, if there are multiple reds the first is taken.
+         * @return The aimpoint for blue
+         */
         private PointInt2D findAimPoint()
         {
-            PointInt2D aimPoint;
+            PointInt2D aimPoint;        // find the point 2 tiles ahead of pacman
             if (_playerDirection == 1)
                 aimPoint = new PointInt2D(_playerPos.getX(), _playerPos.getY() + 2);
             else if (_playerDirection == 2)
@@ -1634,13 +1671,13 @@ public class Game implements IGame
             double distToRed = 0;
             for (Ghost ghost : _ghosts)
             {
-                if (ghost._type == TYPE_RED)
+                if (ghost._type == TYPE_RED)        // search for red
                 {
-                    distToRed = aimPoint.distance2D(ghost.getPointPos());
-                    angleToRed = aimPoint.angle2D(ghost.getPointPos()) + 180;
+                    distToRed = aimPoint.distance2D(ghost.getPointPos());       // calculate the distance to red
+                    angleToRed = aimPoint.angle2D(ghost.getPointPos()) + 180;   // calculate the angle to red and move 180
                 }
             }
-            if (distToRed > 0)
+            if (distToRed > 0)  // if the distance is valid
                 aimPoint = new PointInt2D((int)(distToRed * Math.sin(angleToRed)), (int)(distToRed * Math.cos(angleToRed)));
             return aimPoint;
         }
@@ -1676,6 +1713,11 @@ public class Game implements IGame
             return coloredGhostMove(findAimPoint());
         }
 
+        /**
+         * This is the function that finds the original pink ghost aimpoint, it is explained in YouTube video about the original game.
+         * the aimpoint is 4 tiles ahead of pacman
+         * @return the aimpoint
+         */
         private PointInt2D findAimPoint()
         {
             if (_playerDirection == 1)
@@ -1721,6 +1763,13 @@ public class Game implements IGame
             return coloredGhostMove(findAimPoint());
         }
 
+        /**
+         * This is the function that finds the original orange ghost aimpoint, it is explained in YouTube video about the original game.
+         * the aimpoint is:
+         * 1. (pacman) if orange more than 8 tiles line distance from pacman
+         * 2. the scatter position if it is closer than 8 tiles
+         * @return the aimpoint
+         */
         private PointInt2D findAimPoint()
         {
             if (getPointPos().distance2D(_playerPos) > 8)
@@ -1749,6 +1798,11 @@ public class Game implements IGame
                 super.moveToDirection(followPlayer());
         }
 
+        /**
+         * This is the Terminator ghost, it uses BFS to find the player and it doesn't have delay penalty.
+         * good luck
+         * @return
+         */
         private int followPlayer()
         {
             ArrayList<PointInt2D> waypoints = _map.shortestPath(super._pos, _playerPos, OBSTACLE_VALUE);

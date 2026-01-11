@@ -29,7 +29,6 @@ public class Game implements IGame
     private PointInt2D _playerPos;
     private PointInt2D _playerLastPos;
     private int _playerDirection;
-    private int _playerDelayCount = 0;
     private boolean _manualMode = true;
     private int _manualCMD = 0;
     private Ghost[] _ghosts;
@@ -1440,16 +1439,28 @@ public class Game implements IGame
             if (dir.getX() != _pos.getX())
             {
                 if (dir.getX() > _pos.getX())
-                    return exe.ex3.game.Game.RIGHT;
+                    if (dir.getX() == _pos.getX() + 1)
+                        return RIGHT;
+                    else
+                        return LEFT;
                 else
-                    return exe.ex3.game.Game.LEFT;
+                    if (dir.getX() + 1 == _pos.getX())
+                        return LEFT;
+                    else
+                        return RIGHT;
             }
             else if (dir.getY() != _pos.getY())
             {
                 if (dir.getY() > _pos.getY())
-                    return exe.ex3.game.Game.UP;
+                    if (dir.getY() == _pos.getY() + 1)
+                        return UP;
+                    else
+                        return DOWN;
                 else
-                    return exe.ex3.game.Game.DOWN;
+                    if (dir.getY() + 1 == _pos.getY())
+                        return DOWN;
+                    else
+                        return UP;
             }
             else
                 return 0;
@@ -1801,11 +1812,12 @@ public class Game implements IGame
         /**
          * This is the Terminator ghost, it uses BFS to find the player and it doesn't have delay penalty.
          * good luck
-         * @return
+         * @return The direction to go
          */
         private int followPlayer()
         {
             ArrayList<PointInt2D> waypoints = _map.shortestPath(super._pos, _playerPos, OBSTACLE_VALUE);
+            System.out.println(waypoints);
 
             if (waypoints != null)
             {

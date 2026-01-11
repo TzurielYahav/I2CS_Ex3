@@ -17,7 +17,6 @@ import java.util.ArrayList;
  */
 public class Ex3Algo implements PacManAlgo
 {
-	private int _count;
     private final ArrayList<Pixel2D> _waypoints = new ArrayList<>();
     private Pixel2D _pos;
     private Map _map;
@@ -35,7 +34,6 @@ public class Ex3Algo implements PacManAlgo
 
     public Ex3Algo()
     {
-        _count = 0;
         _map = new Map();
     }
 

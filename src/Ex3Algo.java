@@ -132,16 +132,28 @@ public class Ex3Algo implements PacManAlgo
         if (dir.getX() != _pos.getX())
         {
             if (dir.getX() > _pos.getX())
-                return Game.RIGHT;
+                if (dir.getX() == _pos.getX() + 1)
+                    return PacmanGame.RIGHT;
+                else
+                    return PacmanGame.LEFT;
             else
-                return Game.LEFT;
+            if (dir.getX() + 1 == _pos.getX())
+                return PacmanGame.LEFT;
+            else
+                return PacmanGame.RIGHT;
         }
         else if (dir.getY() != _pos.getY())
         {
             if (dir.getY() > _pos.getY())
-                return Game.UP;
+                if (dir.getY() == _pos.getY() + 1)
+                    return PacmanGame.UP;
+                else
+                    return PacmanGame.DOWN;
             else
-                return Game.DOWN;
+            if (dir.getY() + 1 == _pos.getY())
+                return PacmanGame.DOWN;
+            else
+                return PacmanGame.UP;
         }
         else
             return 0;

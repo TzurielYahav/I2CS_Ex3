@@ -1,6 +1,6 @@
+package Ex3;
+
 import exe.ex3.game.Game;
-import exe.ex3.game.GhostCL;
-import exe.ex3.game.PacManAlgo;
 import exe.ex3.game.PacmanGame;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

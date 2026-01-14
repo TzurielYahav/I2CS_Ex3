@@ -1,9 +1,9 @@
-import exe.ex3.game.Game;
+package Ex3;
+
 import exe.ex3.game.GhostCL;
 import exe.ex3.game.PacManAlgo;
 import exe.ex3.game.PacmanGame;
 
-import java.awt.*;
 import java.util.ArrayList;
 
 /**
@@ -12,6 +12,8 @@ import java.util.ArrayList;
  * 316560499, 4, 12487, 0, 353, 1767640452092, 10, -915428924, -25315164343659
  * Level 4 - 200
  * 316560499, 4, 6480, 0, 360, 1767640553415, 4, -915428924, -1369122087090259
+ * 316560499, 4, 8360, 0, 480, 1768414756562, 6, -915428924, 2530446365895044
+ * 316560499, 4, 8360, 0, 480, 1768415198128, 6, -915428924, 545015599511205
  * This code is a very simple example (random-walk algorithm).
  * Your task is to implement (here) your PacMan algorithm.
  */
@@ -187,7 +189,7 @@ public class Ex3Algo implements PacManAlgo
         sides[2] = new Index2D(_pos.getX() - 1, _pos.getY()); // the LEFT neighbor of the current cell
         sides[3] = new Index2D(_pos.getX() + 1, _pos.getY()); // the RIGHT neighbor of the current cell
 
-        if (target != null && isValidEscape(target))    // if on the way to a fruit check if we can escape there
+        if (target != null && isValidEscape(target) && isSafe(target))    // if on the way to a fruit check if we can escape there
         {
             direction = getDirection(target);
         }
@@ -197,8 +199,11 @@ public class Ex3Algo implements PacManAlgo
             {
                 if (bestRoute < escapePlan.getPixel(side) && isValidEscape(side) && notInCenter(side))  // check if this dir is further from the ghosts than the last, AND if it's a valid escape AND not in the center
                 {
-                    bestRoute = escapePlan.getPixel(side);
-                    direction = getDirection(side);
+                    if (isSafe(side) || direction == 0)
+                    {
+                        bestRoute = escapePlan.getPixel(side);
+                        direction = getDirection(side);
+                    }
                 }
             }
         }
@@ -405,7 +410,7 @@ public class Ex3Algo implements PacManAlgo
     {
         for (GhostCL ghost : _ghosts)
         {
-            if (p.distance2D(pixelFromString(ghost.getPos(CODE))) <= 2) // check the distance to the ghost
+            if (p.distance2D(pixelFromString(ghost.getPos(CODE))) <= 1) // check the distance to the ghost
             {
                 return false;
             }
@@ -421,6 +426,18 @@ public class Ex3Algo implements PacManAlgo
             avalibleEscapeRoutes++;
         if (avalibleEscapeRoutes < 2)
             return false;
+        return true;
+    }
+
+    private boolean isSafe(Pixel2D p)
+    {
+        for (GhostCL ghost : _ghosts)
+        {
+            if (p.distance2D(pixelFromString(ghost.getPos(CODE))) <= 2) // check the distance to the ghost
+            {
+                return false;
+            }
+        }
         return true;
     }
 

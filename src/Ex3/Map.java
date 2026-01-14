@@ -1,3 +1,5 @@
+package Ex3;
+
 import java.util.ArrayList;
 
 /**
@@ -114,7 +116,7 @@ public class Map implements Map2D
     {
         p = pixelToBounds(p.getX(), p.getY());
         if (!isInside(p))
-            throw new IllegalArgumentException("Pixel2D is not inside the map");
+            throw new IllegalArgumentException("Ex3.Pixel2D is not inside the map");
         return _map[p.getY()][p.getX()];
     }
 
@@ -130,7 +132,7 @@ public class Map implements Map2D
     public void setPixel(Pixel2D p, int v)
     {
         if (!isInside(p))
-            throw new IllegalArgumentException("Pixel2D is not inside the map");
+            throw new IllegalArgumentException("Ex3.Pixel2D is not inside the map");
         _map[p.getY()][p.getX()] = v;
     }
 
@@ -146,7 +148,7 @@ public class Map implements Map2D
     public boolean sameDimensions(Map2D p)
     {
         if (p == null)
-            throw new NullPointerException("Map2D p is null");
+            throw new NullPointerException("Ex3.Map2D p is null");
         return getHeight() == p.getHeight() && getWidth() == p.getWidth();
     }
 
@@ -154,7 +156,7 @@ public class Map implements Map2D
     public void addMap2D(Map2D p)
     {
         if (p == null)
-            throw new NullPointerException("Map2D p is null");
+            throw new NullPointerException("Ex3.Map2D p is null");
         if (sameDimensions(p))
         {
             int[][] otherMap = p.getMap();
@@ -286,7 +288,7 @@ public class Map implements Map2D
     public boolean isInside(Pixel2D p)
     {
         if (p == null)
-            throw new NullPointerException("Pixel2D p is null");
+            throw new NullPointerException("Ex3.Pixel2D p is null");
         if (p.getX() >= 0 && p.getY() >= 0)
             return p.getX() < _map[0].length && p.getY() < _map.length;
         return false;
@@ -471,5 +473,27 @@ public class Map implements Map2D
         {
             return new Index2D(x, y);
         }
+    }
+
+    @Override
+    public boolean equals(Object ob)
+    {
+        if (ob instanceof Map)
+        {
+            if (getHeight() == ((Map) ob).getHeight() && getWidth() == ((Map) ob).getWidth())
+            {
+                int[][] otherMap = ((Map) ob).getMap();
+                for (int i = 0; i < _map[0].length; i++)
+                {
+                    for (int j = 0; j < _map.length; j++)
+                    {
+                        if (_map[j][i] != otherMap[j][i])
+                            return false;
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
     }
 }

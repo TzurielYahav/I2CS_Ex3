@@ -1,3 +1,4 @@
+package Ex3;
 
 /**
  * This interface represents an integer based coordinate of a 2D raster (aka a 2D matrix).

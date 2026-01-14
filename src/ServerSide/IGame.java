@@ -15,41 +15,42 @@ public interface IGame
     int LEFT = 2;
     int DOWN = 3;
     int RIGHT = 4;
-    String PLAYER_IMG = "player.png";
-    String MENU_IMG = "PacmanMenu.jpg";
-    String MENU_IMG2 = "PacmanMenu2.jpg";
-    String GAMEOVER_IMG = "PacmanGameOver.jpg";
+    String PATH = "images/";
+    String PLAYER_IMG = PATH + "player.png";
+    String MENU_IMG = PATH + "PacmanMenu.jpg";
+    String MENU_IMG2 = PATH + "PacmanMenu2.jpg";
+    String GAMEOVER_IMG = PATH + "PacmanGameOver.jpg";
     String[] ghostImages = {
-            "ConfusedGhost.png",
-            "FleeingGhost.png",
-            "GreenUp.png",
-            "RedUp.png",
-            "PinkUp.png",
-            "BlueUp.png",
-            "OrangeUp.png",
-            "PurpleUp.png",
-            "TerminatorUp.png",
-            "GreenLeft.png",
-            "RedLeft.png",
-            "PinkLeft.png",
-            "BlueLeft.png",
-            "OrangeLeft.png",
-            "PurpleLeft.png",
-            "TerminatorLeft.png",
-            "GreenDown.png",
-            "RedDown.png",
-            "PinkDown.png",
-            "BlueDown.png",
-            "OrangeDown.png",
-            "PurpleDown.png",
-            "TerminatorDown.png",
-            "GreenRight.png",
-            "RedRight.png",
-            "PinkRight.png",
-            "BlueRight.png",
-            "OrangeRight.png",
-            "PurpleRight.png",
-            "TerminatorRight.png",
+            PATH + "ConfusedGhost.png",
+            PATH + "FleeingGhost.png",
+            PATH + "GreenUp.png",
+            PATH + "RedUp.png",
+            PATH + "PinkUp.png",
+            PATH + "BlueUp.png",
+            PATH + "OrangeUp.png",
+            PATH + "PurpleUp.png",
+            PATH + "TerminatorUp.png",
+            PATH + "GreenLeft.png",
+            PATH + "RedLeft.png",
+            PATH + "PinkLeft.png",
+            PATH + "BlueLeft.png",
+            PATH + "OrangeLeft.png",
+            PATH + "PurpleLeft.png",
+            PATH + "TerminatorLeft.png",
+            PATH + "GreenDown.png",
+            PATH + "RedDown.png",
+            PATH + "PinkDown.png",
+            PATH + "BlueDown.png",
+            PATH + "OrangeDown.png",
+            PATH + "PurpleDown.png",
+            PATH + "TerminatorDown.png",
+            PATH + "GreenRight.png",
+            PATH + "RedRight.png",
+            PATH + "PinkRight.png",
+            PATH + "BlueRight.png",
+            PATH + "OrangeRight.png",
+            PATH + "PurpleRight.png",
+            PATH + "TerminatorRight.png",
     };
     int FLOOR_VALUE = 0;
     int OBSTACLE_VALUE = 1;

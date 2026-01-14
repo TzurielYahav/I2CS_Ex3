@@ -5,15 +5,15 @@ This is a repository for project 3 of the course - Introduction to Computer Scie
 <br></br>
 ## Contents
 ### Classes
-* Ex3Algo
-* ManualAlgo
-* Ex3Main
-* GameInfo
-* Index2D
-* Map
+* Ex3.Ex3Algo
+* Ex3.ManualAlgo
+* Ex3.Ex3Main
+* Ex3.GameInfo
+* Ex3.Index2D
+* Ex3.Map
 #### Interfaces
-* Map2D
-* Pixel2D
+* Ex3.Map2D
+* Ex3.Pixel2D
 ---
 ### Package - ServerSide
 * Game (including Ghost, GameMap)
@@ -25,14 +25,14 @@ This is a repository for project 3 of the course - Introduction to Computer Scie
 * IGhost
 ---
 ### Package - ClientSide
-* GameInfo
+* Ex3.GameInfo
 * GameMain
-* Index2D
-* Map
+* Ex3.Index2D
+* Ex3.Map
 * PacmanAlgo
 #### Interfaces
-* Pixel2D
-* Map2D
+* Ex3.Pixel2D
+* Ex3.Map2D
 
 ---
 
@@ -41,7 +41,7 @@ This is a repository for project 3 of the course - Introduction to Computer Scie
 ### Pacman Algorithm
 #### Description
 The first part of the project is the Pacman algorithm showcase.<br></br>
-To open the project run the *Ex3Main* file.<br></br>
+To open the project run the *Ex3.Ex3Main* file.<br></br>
 To use the project: Press 'Space' to start, 'H' for help
 The program will start the Pacman game with the auto algorithm.
 
@@ -85,7 +85,7 @@ This function works as follows:
 
 <br></br>
 
-    private int escapeGhosts(Map2D escapePlan)
+    private int escapeGhosts(Ex3.Map2D escapePlan)
 
 This function works as follows:
 * If there is already a path to the nearest fruit, make it the target.
@@ -158,12 +158,13 @@ In order to use the game:
 * Make a main class that will run the game as follows
 
 ```java
-    static void main(String[] args)
-    {
-        Game game = new Game(GameInfo._DT);
-        PacmanAlgo man = new PacmanAutoAlgo();
-        game.startGame(man);   //new Game(level);
-    }
+    import Ex3.GameInfo;
+
+static void main(String[] args) {
+    Game game = new Game(GameInfo._DT);
+    PacmanAlgo man = new PacmanAutoAlgo();
+    game.startGame(man);   //new Game(level);
+}
 ```
 
     

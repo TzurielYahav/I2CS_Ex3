@@ -24,7 +24,7 @@ public class Index2D implements Pixel2D
     public double distance2D(Pixel2D t)
     {
         if (t == null)
-            throw new NullPointerException("Pixel2D p2 is null");
+            throw new NullPointerException("Ex3.Pixel2D p2 is null");
         return Math.sqrt(Math.pow(_x-t.getX(), 2) + Math.pow(_y-t.getY(), 2));
     }
 

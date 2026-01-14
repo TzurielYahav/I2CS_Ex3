@@ -115,11 +115,6 @@ public class Game implements IGame
         }
     }
 
-    public int getStatus()
-    {
-        return _gameStatus;
-    }
-
     public int[][] getMap()
     {
         return _map.getMap();
@@ -152,7 +147,7 @@ public class Game implements IGame
             if (character == 'm')
                 changeGameMode();
             if (character == 'h')
-                System.out.println("Pacman help: keys: ' '-start, 'w,a,s,d'-directions, all other parameters should be configured via GameInfo.java, ");
+                System.out.println("Pacman help: keys: ' '-start, 'w,a,s,d'-directions, all other parameters should be configured via Ex3.GameInfo.java, ");
             if (character >= '1' && character <= '9')
             {
                 changeLevel(Character.getNumericValue(character) - 1);

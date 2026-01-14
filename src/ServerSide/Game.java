@@ -7,6 +7,10 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import java.awt.Font;
 
+/**
+ * The Pacman game server
+ * @author Tzuriel
+ */
 public class Game implements IGame
 {
     private PointInt2D SP_TOP_LEFT;     // Scatter pos top left

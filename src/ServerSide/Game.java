@@ -1833,8 +1833,6 @@ public class Game implements IGame
         private int followPlayer()
         {
             ArrayList<PointInt2D> waypoints = _map.shortestPath(super._pos, _playerPos, OBSTACLE_VALUE);
-            System.out.println(waypoints);
-
             if (waypoints != null)
             {
                 waypoints.removeFirst();

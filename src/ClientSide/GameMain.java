@@ -10,7 +10,7 @@ public class GameMain
     {
         Game game = new Game(GameInfo._DT);
         PacmanAlgo man = new PacmanAutoAlgo();
-        StdDraw.enableDoubleBuffering(); //
+        StdDraw.enableDoubleBuffering();
         game.startGame(man);   //new Game(level);
     }
 }

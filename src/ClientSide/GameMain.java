@@ -2,10 +2,7 @@ package ClientSide;
 
 import ServerSide.Game;
 import ServerSide.PacmanAlgo;
-
-//import exe.ex3.game.Game;
-//import exe.ex3.game.PacManAlgo;
-//import exe.ex3.game.PacmanGame;
+import ServerSide.StdDraw;
 
 public class GameMain
 {
@@ -13,6 +10,7 @@ public class GameMain
     {
         Game game = new Game(GameInfo._DT);
         PacmanAlgo man = new PacmanAutoAlgo();
+        StdDraw.enableDoubleBuffering(); //
         game.startGame(man);   //new Game(level);
     }
 }

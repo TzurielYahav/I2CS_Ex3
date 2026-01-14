@@ -29,7 +29,7 @@ public class Game implements IGame
     private PointInt2D _playerPos;
     private PointInt2D _playerLastPos;
     private int _playerDirection;
-    private boolean _manualMode = true;
+    private boolean _manualMode = false;
     private int _manualCMD = 0;
     private Ghost[] _ghosts;
     private boolean _inMenu = true;
@@ -248,6 +248,11 @@ public class Game implements IGame
      */
     public void end()
     {
+        StdDraw.clear();
+        drawInfo();
+        drawMap();
+        drawPlayer();
+        drawGhosts();
         _gameStatus = GAME_OVER;
         if (_score > _highScore)
             _highScore = _score;
@@ -256,6 +261,8 @@ public class Game implements IGame
         StdDraw.setPenColor(StdDraw.YELLOW);
         StdDraw.setFont(new Font("Bauhaus 93", Font.BOLD, 20));
         StdDraw.text(X_Scale / 2, Y_Scale / 2 - (Y_Scale / 8), "Score  " + _score + "  HighScore  " + _highScore);
+        StdDraw.show();
+        StdDraw.pause(20);
     }
 
     /**
@@ -269,14 +276,16 @@ public class Game implements IGame
      * move ghosts
      * draw ghosts
      * check for collision
-     * @param direction
+     * @param direction the direction for the player from the algorithm
      */
     public void move(int direction)
     {
         if (_inMenu)    // Menu animation
         {
-            StdDraw.pause(1000);
+            StdDraw.clear();
             drawMenu();
+            StdDraw.show();
+            StdDraw.pause(1000);
         }
         if (_gameStatus != IGame.PLAY)
             return;
@@ -294,9 +303,7 @@ public class Game implements IGame
                 direction = _manualCMD;
                 //-
             }
-            drawInfo();
             movePlayer(direction);
-            drawPlayer();
             checkCollisionByGhosts();
             // ========= Ghost ========
             moveGhosts();
@@ -305,10 +312,11 @@ public class Game implements IGame
             else
                 Ghost.addDelayCount();
 
-            drawGhosts();
             checkCollisionByGhosts();
+            //
+            if (_gameStatus == IGame.PLAY)
+                drawUpdate();
         }
-
         // ========= Check victory ========
     }
 
@@ -372,7 +380,10 @@ public class Game implements IGame
                     }
                 }
                 else
+                {
                     end();      // player looses
+                    return;
+                }
             }
         }
     }
@@ -492,7 +503,6 @@ public class Game implements IGame
         double infoHeight = (double) INFO_Y_HEIGHT / (((double) CANVAS_HEIGHT - (double) INFO_Y_HEIGHT) / Y_Scale);
         StdDraw.setXscale(0,X_Scale);
         StdDraw.setYscale(0,Y_Scale + infoHeight);
-        drawMap();
         drawUpdate();
     }
 
@@ -567,9 +577,13 @@ public class Game implements IGame
 
     private void drawUpdate()
     {
+        StdDraw.clear();
         drawInfo();
+        drawMap();
         drawPlayer();
         drawGhosts();
+        StdDraw.show();
+        StdDraw.pause(20);
     }
 
     /**
@@ -646,9 +660,11 @@ public class Game implements IGame
         _gameStatus = INIT;
         _score = 0;
         _ghostScatterCounter = 0;
-        StdDraw.clear();
         createLevel();
+        StdDraw.clear();
         drawGame();
+        StdDraw.show();
+        StdDraw.pause(20);
     }
 
     /**

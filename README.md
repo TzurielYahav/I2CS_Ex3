@@ -114,7 +114,7 @@ Result of running level 4 on 100 milliseconds per frame:
 <br></br>
 Result of running level 4 on 200 milliseconds per frame:
 <br></br>
-`316560499, 4, 6480, 0, 360, 1767640553415, 4, -915428924, -1369122087090259`
+`316560499, 4, 8360, 0, 480, 1768415198128, 6, -915428924, 545015599511205`
 <br></br>
 
 

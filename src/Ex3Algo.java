@@ -31,10 +31,17 @@ public class Ex3Algo implements PacManAlgo
             5       // Big Fruit
     };
 
-
     public Ex3Algo()
     {
         _map = new Map();
+    }
+
+    public void init(PacmanGame game, String pos)
+    {
+        _map.init(mapFlip(game.getGame(0)));    // flip the map because my code is built so that length is width and opposite
+        _pos = pixelFromString(pos);
+        _ghosts = game.getGhosts(CODE);
+        _waypoints.clear();
     }
 
 	/**
@@ -112,95 +119,126 @@ public class Ex3Algo implements PacManAlgo
         return direction;
 	}
 
-    private static Pixel2D pixelFromString(String s)
-    {
-        String[] split = s.split(",");
-        if(split.length != 2)
-            throw new IllegalArgumentException("Invalid coordinate");
-        return new Index2D(Integer.parseInt(split[0]),Integer.parseInt(split[1]));
-    }
-
-    /**
-     * find the direction between the current position and the given point
-     * @param dir The point to find direction to
-     * @return The direction to the point
-     */
-    private int getDirection(Pixel2D dir)
-    {
-        if (dir.getX() != _pos.getX())
-        {
-            if (dir.getX() > _pos.getX())
-                if (dir.getX() == _pos.getX() + 1)
-                    return PacmanGame.RIGHT;
-                else
-                    return PacmanGame.LEFT;
-            else
-            if (dir.getX() + 1 == _pos.getX())
-                return PacmanGame.LEFT;
-            else
-                return PacmanGame.RIGHT;
-        }
-        else if (dir.getY() != _pos.getY())
-        {
-            if (dir.getY() > _pos.getY())
-                if (dir.getY() == _pos.getY() + 1)
-                    return PacmanGame.UP;
-                else
-                    return PacmanGame.DOWN;
-            else
-            if (dir.getY() + 1 == _pos.getY())
-                return PacmanGame.DOWN;
-            else
-                return PacmanGame.UP;
-        }
-        else
-            return 0;
-    }
-
-    /**
-     * Check that this point is not inside the ghost house
-     * @param p The point to check
-     * @return if the point is in the house
-     */
-    private boolean notInCenter(Pixel2D p)
-    {
-        return !(p.getX() >= 8 && p.getX() <= 14 && p.getY() >= 10 && p.getY() <= 13);
-    }
-
-    /**
-     * checks if this direction is a valid direction to escape to,
-     * 1. checks if there are no ghosts within 2 tiles of the point
-     * 2. checks that this is not a closed tile (has only one way out)
-     * @param p The point to check
-     * @return If this is a valid escape tile
-     */
-    private boolean isValidEscape(Pixel2D p)
-    {
-        for (GhostCL ghost : _ghosts)
-        {
-            if (p.distance2D(pixelFromString(ghost.getPos(CODE))) <= 2) // check the distance to the ghost
-            {
-                return false;
-            }
-        }
-        int avalibleEscapeRoutes = 0;                                   // count how many neighbors of this tile are not walls
-        if (_map.getPixel(p.getX() + 1, p.getY()) != OBSTACLE_COLOR)
-            avalibleEscapeRoutes++;
-        if (_map.getPixel(p.getX() - 1, p.getY()) != OBSTACLE_COLOR)
-            avalibleEscapeRoutes++;
-        if (_map.getPixel(p.getX(), p.getY() + 1) != OBSTACLE_COLOR)
-            avalibleEscapeRoutes++;
-        if (_map.getPixel(p.getX(), p.getY() - 1) != OBSTACLE_COLOR)
-            avalibleEscapeRoutes++;
-        if (avalibleEscapeRoutes < 2)
-            return false;
-        return true;
-    }
-
     private Pixel2D getGhostPos(int i)
     {
         return pixelFromString(_ghosts[i].getPos(CODE));
     }
+
+    /*//////// Move Functions ////////*/
+
+    /**
+     * finds the shortest way to the nearest fruit.
+     * 1. if chasing go around big fruits
+     * 2. otherwise go around ghosts
+     * 3. if there is a lone fruit go for it
+     * 4. otherwise go to the nearest fruit
+     * @param isChasing if we are chasing
+     */
+    public void chaseFruit(boolean isChasing)
+    {
+        Map tmpMap;
+        if (isChasing)  // if in chasing mode, modify the map so that we dont eat the big fruits (its a waste)
+        {
+            tmpMap = dontEatBigFruits();
+        }
+        else            // otherwise modify the map so that we calculate a way around the ghosts
+        {
+            tmpMap = new Map(_map.getMap());
+            for (int i = 0; i < _ghosts.length; i++)
+            {
+                tmpMap.setPixel(getGhostPos(i), OBSTACLE_COLOR);
+            }
+        }
+        Pixel2D loneFruit = findLoneFruit(tmpMap);  // if there is a lone fruit around us go for it
+        if (loneFruit != null)
+            _waypoints.add(loneFruit);
+        else                                        // otherwise find the shortest path to the nearest fruit with BFS
+        {
+            _waypoints.clear();
+            ArrayList<Pixel2D> newWay = tmpMap.shortestPath(_pos, FRUIT_COLORS, OBSTACLE_COLOR);
+            if (newWay != null && !newWay.isEmpty())
+            {
+                _waypoints.addAll(newWay);
+                _waypoints.removeFirst();
+            }
+        }
+    }
+
+    /**
+     * find the best tile to escape to.
+     * if already on the way to a fruit, make it our target route,
+     * 1. if the target is a valid escape tile go to it.
+     * 2. otherwise find the tile that takes us furthest from the ghosts
+     * @param escapePlan the alldistances map from the too close ghosts
+     * @return the direction to escape to
+     */
+    public int escapeGhosts(Map2D escapePlan)
+    {
+        Pixel2D target = null;
+        if (!_waypoints.isEmpty())              // if we have waypoints then we are on the way to a fruit, make it our target
+            target = _waypoints.removeFirst();
+
+        int bestRoute = 0;
+        int direction = 0;
+
+        Pixel2D[] sides = new Index2D[4];
+        sides[0] = new Index2D(_pos.getX(), _pos.getY() + 1); // the UP neighbor of the current cell
+        sides[1] = new Index2D(_pos.getX(), _pos.getY() - 1); // the DOWN neighbor of the current cell
+        sides[2] = new Index2D(_pos.getX() - 1, _pos.getY()); // the LEFT neighbor of the current cell
+        sides[3] = new Index2D(_pos.getX() + 1, _pos.getY()); // the RIGHT neighbor of the current cell
+
+        if (target != null && isValidEscape(target))    // if on the way to a fruit check if we can escape there
+        {
+            direction = getDirection(target);
+        }
+        else
+        {
+            for (Pixel2D side : sides)                  // otherwise find the best direction to escape
+            {
+                if (bestRoute < escapePlan.getPixel(side) && isValidEscape(side) && notInCenter(side))  // check if this dir is further from the ghosts than the last, AND if it's a valid escape AND not in the center
+                {
+                    bestRoute = escapePlan.getPixel(side);
+                    direction = getDirection(side);
+                }
+            }
+        }
+        return direction;
+    }
+
+    /**
+     * find the shortest way to the closest ghost, if its within chase distance
+     * 1. search for the closest ghost and check if its within chase distance
+     * 2. find the shortest way to that ghost
+     * @return the direction to go to, if there is none then 0.
+     */
+    public int chaseGhost()
+    {
+        double closestDistance = Double.MAX_VALUE;
+        int closestGhost = -1;
+        for (int i = 0; i < _ghosts.length; i++)
+        {
+            double newClosestDistance = pixelFromString(_ghosts[i].getPos(CODE)).distance2D(_pos);  // check the distance to the ghost
+            if (closestDistance > newClosestDistance && newClosestDistance < CHASE_DISTANCE && notInCenter(getGhostPos(i)))
+            {       // check if the new distance is closer than the last ghost, AND if this distance is smaller than the max chase distance
+                closestDistance = newClosestDistance;
+                closestGhost = i;
+            }
+        }
+        if (closestGhost == -1) // if we didn't find a ghost to chase
+            return 0;
+
+        Map tmpMap = dontEatBigFruits();
+        _waypoints.clear();
+        _waypoints.addAll(tmpMap.shortestPath(_pos, pixelFromString(_ghosts[closestGhost].getPos(CODE)), OBSTACLE_COLOR));  // find the shortest way to the closest ghost
+        _waypoints.removeFirst();
+        if (!_waypoints.isEmpty())
+        {
+            return getDirection(_waypoints.removeFirst());
+        }
+        return 0;
+    }
+
+    /// ///////////////////////////////////////////////////////////
 
     /**
      * edits a map to put an obstacle mark on every big fruit so that pacman will not eat them
@@ -301,118 +339,129 @@ public class Ex3Algo implements PacManAlgo
         return flipped;
     }
 
-    /*//////// Move Functions ////////*/
-
-    /**
-     * finds the shortest way to the nearest fruit.
-     * 1. if chasing go around big fruits
-     * 2. otherwise go around ghosts
-     * 3. if there is a lone fruit go for it
-     * 4. otherwise go to the nearest fruit
-     * @param isChasing if we are chasing
-     */
-    private void chaseFruit(boolean isChasing)
+    public static Pixel2D pixelFromString(String s)
     {
-        Map tmpMap;
-        if (isChasing)  // if in chasing mode, modify the map so that we dont eat the big fruits (its a waste)
-        {
-            tmpMap = dontEatBigFruits();
-        }
-        else            // otherwise modify the map so that we calculate a way around the ghosts
-        {
-            tmpMap = new Map(_map.getMap());
-            for (int i = 0; i < _ghosts.length; i++)
-            {
-                tmpMap.setPixel(getGhostPos(i), OBSTACLE_COLOR);
-            }
-        }
-        Pixel2D loneFruit = findLoneFruit(tmpMap);  // if there is a lone fruit around us go for it
-        if (loneFruit != null)
-            _waypoints.add(loneFruit);
-        else                                        // otherwise find the shortest path to the nearest fruit with BFS
-        {
-            _waypoints.clear();
-            ArrayList<Pixel2D> newWay = tmpMap.shortestPath(_pos, FRUIT_COLORS, OBSTACLE_COLOR);
-            if (newWay != null && !newWay.isEmpty())
-            {
-                _waypoints.addAll(newWay);
-                _waypoints.removeFirst();
-            }
-        }
+        String[] split = s.split(",");
+        if(split.length != 2)
+            throw new IllegalArgumentException("Invalid coordinate");
+        return new Index2D(Integer.parseInt(split[0]),Integer.parseInt(split[1]));
     }
 
     /**
-     * find the best tile to escape to.
-     * if already on the way to a fruit, make it our target route,
-     * 1. if the target is a valid escape tile go to it.
-     * 2. otherwise find the tile that takes us furthest from the ghosts
-     * @param escapePlan the alldistances map from the too close ghosts
-     * @return the direction to escape to
+     * find the direction between the current position and the given point
+     * @param dir The point to find direction to
+     * @return The direction to the point
      */
-    private int escapeGhosts(Map2D escapePlan)
+    public int getDirection(Pixel2D dir)
     {
-        Pixel2D target = null;
-        if (!_waypoints.isEmpty())              // if we have waypoints then we are on the way to a fruit, make it our target
-            target = _waypoints.removeFirst();
-
-        int bestRoute = 0;
-        int direction = 0;
-
-        Pixel2D[] sides = new Index2D[4];
-        sides[0] = new Index2D(_pos.getX(), _pos.getY() + 1); // the UP neighbor of the current cell
-        sides[1] = new Index2D(_pos.getX(), _pos.getY() - 1); // the DOWN neighbor of the current cell
-        sides[2] = new Index2D(_pos.getX() - 1, _pos.getY()); // the LEFT neighbor of the current cell
-        sides[3] = new Index2D(_pos.getX() + 1, _pos.getY()); // the RIGHT neighbor of the current cell
-
-        if (target != null && isValidEscape(target))    // if on the way to a fruit check if we can escape there
+        if (dir.getX() != _pos.getX())
         {
-            direction = getDirection(target);
+            if (dir.getX() > _pos.getX())
+                if (dir.getX() == _pos.getX() + 1)
+                    return PacmanGame.RIGHT;
+                else
+                    return PacmanGame.LEFT;
+            else
+            if (dir.getX() + 1 == _pos.getX())
+                return PacmanGame.LEFT;
+            else
+                return PacmanGame.RIGHT;
+        }
+        else if (dir.getY() != _pos.getY())
+        {
+            if (dir.getY() > _pos.getY())
+                if (dir.getY() == _pos.getY() + 1)
+                    return PacmanGame.UP;
+                else
+                    return PacmanGame.DOWN;
+            else
+            if (dir.getY() + 1 == _pos.getY())
+                return PacmanGame.DOWN;
+            else
+                return PacmanGame.UP;
         }
         else
+            return 0;
+    }
+
+    /**
+     * Check that this point is not inside the ghost house
+     * @param p The point to check
+     * @return if the point is in the house
+     */
+    private boolean notInCenter(Pixel2D p)
+    {
+        return !(p.getX() >= 8 && p.getX() <= 14 && p.getY() >= 10 && p.getY() <= 13);
+    }
+
+    /**
+     * checks if this direction is a valid direction to escape to,
+     * 1. checks if there are no ghosts within 2 tiles of the point
+     * 2. checks that this is not a closed tile (has only one way out)
+     * @param p The point to check
+     * @return If this is a valid escape tile
+     */
+    private boolean isValidEscape(Pixel2D p)
+    {
+        for (GhostCL ghost : _ghosts)
         {
-            for (Pixel2D side : sides)                  // otherwise find the best direction to escape
+            if (p.distance2D(pixelFromString(ghost.getPos(CODE))) <= 2) // check the distance to the ghost
             {
-                if (bestRoute < escapePlan.getPixel(side) && isValidEscape(side) && notInCenter(side))  // check if this dir is further from the ghosts than the last, AND if it's a valid escape AND not in the center
+                return false;
+            }
+        }
+        int avalibleEscapeRoutes = 0;                                   // count how many neighbors of this tile are not walls
+        if (_map.getPixel(p.getX() + 1, p.getY()) != OBSTACLE_COLOR)
+            avalibleEscapeRoutes++;
+        if (_map.getPixel(p.getX() - 1, p.getY()) != OBSTACLE_COLOR)
+            avalibleEscapeRoutes++;
+        if (_map.getPixel(p.getX(), p.getY() + 1) != OBSTACLE_COLOR)
+            avalibleEscapeRoutes++;
+        if (_map.getPixel(p.getX(), p.getY() - 1) != OBSTACLE_COLOR)
+            avalibleEscapeRoutes++;
+        if (avalibleEscapeRoutes < 2)
+            return false;
+        return true;
+    }
+
+    public void setPixel(Pixel2D p, int v)
+    {
+        _map.setPixel(p, v);
+    }
+
+    public Pixel2D getWaypoint()
+    {
+        if (!_waypoints.isEmpty())
+            return _waypoints.getFirst();
+        else
+            return null;
+    }
+
+    public void clearWaypoints()
+    {
+        _waypoints.clear();
+    }
+
+    public void setPos(String pos)
+    {
+        _pos = pixelFromString(pos);
+    }
+
+    public Map2D getEscapePlan()
+    {
+        Map2D escapePlan = new Map(_map.getWidth(), _map.getHeight(), 0);
+        for (GhostCL ghost : _ghosts)
+        {
+            if (ghost.getStatus() != 0)     // if the ghost is active
+            {
+                Pixel2D ghostPos = pixelFromString(ghost.getPos(CODE));
+                Map2D currentEscape = _map.allDistance(ghostPos, OBSTACLE_COLOR);   // the alldistance map from the ghost
+                if (!ghostTooFar(currentEscape))                                    // if the ghost is NOT too far from us to run
                 {
-                    bestRoute = escapePlan.getPixel(side);
-                    direction = getDirection(side);
+                    escapePlan.addMap2D(currentEscape);                             // add the alldistance to the master plan
                 }
             }
         }
-        return direction;
+        return escapePlan;
     }
-
-    /**
-     * find the shortest way to the closest ghost, if its within chase distance
-     * 1. search for the closest ghost and check if its within chase distance
-     * 2. find the shortest way to that ghost
-     * @return the direction to go to, if there is none then 0.
-     */
-    private int chaseGhost()
-    {
-        double closestDistance = Double.MAX_VALUE;
-        int closestGhost = -1;
-        for (int i = 0; i < _ghosts.length; i++)
-        {
-            double newClosestDistance = pixelFromString(_ghosts[i].getPos(CODE)).distance2D(_pos);  // check the distance to the ghost
-            if (closestDistance > newClosestDistance && newClosestDistance < CHASE_DISTANCE && notInCenter(getGhostPos(i)))
-            {       // check if the new distance is closer than the last ghost, AND if this distance is smaller than the max chase distance
-                closestDistance = newClosestDistance;
-                closestGhost = i;
-            }
-        }
-        if (closestGhost == -1) // if we didn't find a ghost to chase
-            return 0;
-
-        Map tmpMap = dontEatBigFruits();
-        _waypoints.clear();
-        _waypoints.addAll(tmpMap.shortestPath(_pos, pixelFromString(_ghosts[closestGhost].getPos(CODE)), OBSTACLE_COLOR));  // find the shortest way to the closest ghost
-        _waypoints.removeFirst();
-        if (!_waypoints.isEmpty())
-        {
-            return getDirection(_waypoints.removeFirst());
-        }
-        return 0;
-    }
-
 }

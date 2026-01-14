@@ -1,6 +1,7 @@
 # Assignment 3
 This is a repository for project 3 of the course - Introduction to Computer Science in Java (Ariel University, 2026 - fall semester - A).
 
+---
 <br></br>
 ## Contents
 ### Classes
@@ -13,7 +14,7 @@ This is a repository for project 3 of the course - Introduction to Computer Scie
 #### Interfaces
 * Map2D
 * Pixel2D
-
+---
 ### Package - ServerSide
 * Game (including Ghost, GameMap)
 * PointInt2D
@@ -22,7 +23,7 @@ This is a repository for project 3 of the course - Introduction to Computer Scie
 #### Interfaces
 * IGame
 * IGhost
-
+---
 ### Package - ClientSide
 * GameInfo
 * GameMain
@@ -33,6 +34,7 @@ This is a repository for project 3 of the course - Introduction to Computer Scie
 * Pixel2D
 * Map2D
 
+---
 
 <br></br>
 ## Usage
@@ -103,9 +105,11 @@ This function works as follows:
 * If no ghost was selected return 0.
 * Else make a temporary map that puts an obstacle value on top of the big fruits (to not waste them).
 * Calculate the shortest path to that ghost using the BFS algorithm with the `shortestPath()` function.
-  
+
+---
+
 <br></br>
-### Result
+## Result
 <br></br>
 Result of running level 4 on 100 milliseconds per frame:
 <br></br>
@@ -121,7 +125,7 @@ https://github.com/user-attachments/assets/4da3ed2b-ea72-4aa6-9c74-1b77666e1433
 
 
 
-
+---
 
 <br></br>
 ## Server Implementation

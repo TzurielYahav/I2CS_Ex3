@@ -2,7 +2,6 @@
 This is a repository for project 3 of the course - Introduction to Computer Science in Java (Ariel University, 2026 - fall semester - A).
 
 ---
-<br></br>
 ## Contents
 ### Classes
 * Ex3.Ex3Algo
@@ -36,7 +35,6 @@ This is a repository for project 3 of the course - Introduction to Computer Scie
 
 ---
 
-<br></br>
 ## Usage
 ### Pacman Algorithm
 #### Description
@@ -108,7 +106,6 @@ This function works as follows:
 
 ---
 
-<br></br>
 ## Result
 <br></br>
 Result of running level 4 on 100 milliseconds per frame:
@@ -140,36 +137,34 @@ The server side structure is as follows:
 * The `PointInt2D` class is a structure representing a point in 2D space.
 
 The server works as follows:
-* The server initializes the game with `init()`.
+* The server initializes the server with `init()`.
 * The main game loop starts and the menu is shown.
 * After pressing to start the game the first level starts.
 * The game loop order is:
     * Process input
-    * Draw UI
     * Move player
-    * Draw player
     * Check for collision of player with ghosts
     * Move ghosts
-    * Draw ghosts
     * Check for collision of player with ghosts
+    * Draw UI
+    * Draw player
+    * Draw ghosts
 
 <br></br>
-In order to use the game:
-* Make a main class that will run the game as follows
-
-```java
-    import Ex3.GameInfo;
-
-static void main(String[] args) {
-    Game game = new Game(GameInfo._DT);
-    PacmanAlgo man = new PacmanAutoAlgo();
-    game.startGame(man);   //new Game(level);
-}
-```
-
+The client works as follows:
+* The `GameMain` contains the `main` function that initializes the game
+* The `main` function initializes the game with:
+    ```java
+        import Ex3.GameInfo;
     
-
-* Make the class `PacmanAutoAlgo` (implementing the `PacmanAlgo` interface), that will be responsible for the Pacman algorithm.
+    static void main(String[] args) {
+        Game game = new Game(GameInfo._DT);
+        PacmanAlgo man = new PacmanAutoAlgo();
+        StdDraw.enableDoubleBuffering();
+        game.startGame(man);   //new Game(level);
+    }
+    ```
+* The client also contains the `PacmanAutoAlgo` class (implementing the `PacmanAlgo` interface), that will be responsible for the Pacman algorithm.
 <br></br>
 
 ### Result
